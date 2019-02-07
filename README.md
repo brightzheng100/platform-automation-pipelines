@@ -1,7 +1,7 @@
 
 # `pcf-automation`-powered Concourse Pipelines
 
-A set of workable `pcf-automation`-powered Concourse pipelines to drive PCF Platform & Tiles **install**, **upgrade** and **patch** in an easy way!
+A set of workable `pcf-automation`-powered Concourse pipelines to drive PCF Platform & Tiles' **install**, **upgrade** and **patch** in an easy way!
 
 **Caution:**
 > This is simply a sharing of the experience while building Concourse pipelines to drive `pcf-automation`.
@@ -18,12 +18,13 @@ The `pcf-automation` is still under beta as of writing, but it's really a compel
 
 Overall it brings in great value which includes but is not limited to below:
 
-- We can now build pipelines to **install**, **upgrade**, and **patch** by simply orchestrating its **tasks**;
+- We can now build pipelines to **install**, **upgrade**, and **patch** by simply orchestrating **tasks** it offers;
 - Reduce the complexity dramatically compared to [`pcf-pipelines`](https://github.com/pivotal-cf/pcf-pipelines)
 - Let operator gain better control on PCF automation as it brings in better mechanisms
 
 I've already compiled some _core_ pipelines below to start with which are good for most of the scenarios.
-But I may gradually bring in more when needed.
+
+And I may gradually bring in more when needed.
 
 | Pipeline | Purposes | Compatible for PCF Products | Pipeline YAML File  |
 | --- | --- | --- | --- |
@@ -45,9 +46,9 @@ But if one thinks of the _best practices_ and/or _sustainable processes_, we _sh
 
 It's of course required if we're working on Concourse pipelines.
 
-And this is exactly what this repo is built for: `pcf-automation`-based Concourse pipelines
+And this is exactly what this repo is built for: `pcf-automation`-powered **Concourse pipelines**
 
-> Note: Using other CI/CD platform is totally possible, but it's NOT the scope of this repo.
+> Note: Using other CI/CD platform is totally possible too, but it's NOT the scope of this repo.
 
 
 **Git Service (Required)**
@@ -109,7 +110,7 @@ Here is an example:
 $ cd pcf-automation-configuration
 $ tree .
 .
-└── pcf-dev
+└── dev
     ├── config
     │   └── auth.yml
     ├── env
@@ -118,8 +119,7 @@ $ tree .
     │   ├── cf-2.2.11.yml
     │   ├── credhub-service-broker-1.1.0.yml
     │   ├── director-2.2.10.yml
-    │   ├── director-2.3.5.yml
-    │   └── director.yml
+    │   └── director-2.3.5.yml
     ├── products
     │   ├── cf.yml
     │   ├── credhub-service-broker.yml
@@ -270,7 +270,7 @@ Screenshot looks like this:
 
 | Ops File  | Applicable To Pipelines  | Purpose |
 | --- | --- | --- |
-| [resource-pcf-automation-tasks-git.yml](resource-pcf-automation-tasks-git.yml)  | ALL  | To host `pcf-automation` tasks in Git repo for necessary customization |
-| [resource-product-s3.yml](resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](network.pivotal.io) |
-| [resource-trigger-daily.yml](resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
-| [resource-trigger-onetime.yml](resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
+| [resource-pcf-automation-tasks-git.yml](ops-files/resource-pcf-automation-tasks-git.yml)  | ALL  | To host `pcf-automation` tasks in Git repo for necessary customization |
+| [resource-product-s3.yml](ops-files/resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](https://network.pivotal.io) |
+| [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
+| [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
