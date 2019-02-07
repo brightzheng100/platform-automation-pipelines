@@ -1,0 +1,6 @@
+- op: replace  
+  path: /jobs/name=install-opsman/plan/task=configure-authentication
+  value:
+    task: configure-authentication
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/configure-ldap-authentication.yml

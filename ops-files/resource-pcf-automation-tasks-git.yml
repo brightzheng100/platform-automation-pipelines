@@ -1,0 +1,9 @@
+- op: replace  
+  path: /resources/name=pcf-automation-tasks
+  value:
+    name: pcf-automation-tasks
+    type: git
+    source:
+      private_key: ((git.private_key))
+      uri: ((git.pcf_automation_tasks.uri))
+      branch: master

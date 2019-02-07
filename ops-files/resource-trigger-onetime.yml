@@ -1,0 +1,13 @@
+- op: add  
+  path: /resources/-
+  value:
+    name: one-time-trigger
+    type: time
+    source:
+      interval: 999999h
+
+- op: add
+  path: /jobs/name=((job_name))/plan/0/aggregate/-
+  value:
+    get: one-time-trigger
+    trigger: true

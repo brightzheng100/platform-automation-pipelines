@@ -1,0 +1,13 @@
+- op: add  
+  path: /resources/-
+  value:
+    name: daily-trigger
+    type: time
+    source:
+      interval: 24h
+
+- op: add
+  path: /jobs/name=((job_name))/plan/0/aggregate/-
+  value:
+    get: daily-trigger
+    trigger: true
