@@ -1,20 +1,20 @@
 
-# `pcf-automation`-powered Concourse Pipelines
+# `platform-automation`-powered Concourse Pipelines
 
-A set of workable `pcf-automation`-powered Concourse pipelines to drive PCF Platform & Tiles' **install**, **upgrade** and **patch** in an easy way!
+A set of workable `platform-automation`-powered Concourse pipelines to drive PCF Platform & Tiles' **install**, **upgrade** and **patch** in an easy way!
 
 **Caution:**
-> This is simply a sharing of the experience while building Concourse pipelines to drive `pcf-automation`.
+> This is simply a sharing of the experience while building Concourse pipelines to drive `platform-automation`.
 > Pivotal does not provide support for these pipelines. 
 
 **Important Notes:**
 > 1. If something is broken, please raise issues; and PRs are always welcome so that we can build better experience from a community-driven, best-effort basis;
-> 2. As of now, `pcf-automation` is not yet GA so you may have to reach out to Pivotal for early access if you're interested.
+> 2. As of now, `platform-automation` is not yet GA so you may have to reach out to Pivotal for early access if you're interested.
 
 
 ## Overview
 
-The `pcf-automation` is still under beta as of writing, but it's really a compelling product for driving PCF automation.
+The `platform-automation` is still under beta as of writing, but it's really a compelling product for driving PCF automation.
 
 Overall it brings in great value which includes but is not limited to below:
 
@@ -37,7 +37,7 @@ And I may gradually bring in more when needed.
 
 ## Preparation
 
-One of the major goals of building `pcf-automation` is to simplify things about PCF automation.
+One of the major goals of building `platform-automation` is to simplify things about PCF automation.
 
 But if one thinks of the _best practices_ and/or _sustainable processes_, we _should_ prepare some or all of below items if there is a good fit.
 
@@ -46,7 +46,7 @@ But if one thinks of the _best practices_ and/or _sustainable processes_, we _sh
 
 It's of course required if we're working on Concourse pipelines.
 
-And this is exactly what this repo is built for: `pcf-automation`-powered **Concourse pipelines**
+And this is exactly what this repo is built for: `platform-automation`-powered **Concourse pipelines**
 
 > Note: Using other CI/CD platform is totally possible too, but it's NOT the scope of this repo.
 
@@ -55,7 +55,7 @@ And this is exactly what this repo is built for: `pcf-automation`-powered **Conc
 
 Git service is required to host some stuff like products' config files.
 
-It's also possible to host the `pcf-automation` tasks if you really want to further _customize_ them.
+It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them.
 
 [Gogs](https://gogs.io/) might be a good candidate while on-prem, or simply use any public ones, like GitHub -- don't forget, private repos are possible now, for free:)
 
@@ -63,13 +63,13 @@ It's also possible to host the `pcf-automation` tasks if you really want to furt
 **S3 Blobstore (Required in air-gapped environment)**
 
 S3 blobstore is required in air-gapped environment to host a lot of things like artifacts.
-And it's an ideal place to host the `pcf-automation-image` if Docker Registry is not available.
+And it's an ideal place to host the `platform-automation-image` if Docker Registry is not available.
 
 
 **Docker Registry (Optional)**
 
 Docker Registry is optional.
-It makes sense only when you want to host the `pcf-automation-image` or other custom Concourse resource types which are typically Dockerized.
+It makes sense only when you want to host the `platform-automation-image` or other custom Concourse resource types which are typically Dockerized.
 
 
 **Some Client-side Tools**
@@ -83,7 +83,7 @@ Install required tools in your laptop or the workspace:
 
 Before we `fly` Concourse pipelines, do consider to have a configuration Git repo to host things like `env.yml`, `auth.yml`, product config and vars files.
 
-Please refer [here](http://docs.pivotal.io/pcf-automation/v1.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
+Please refer [here](http://docs.pivotal.io/platform-automation/v1.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
 
 Based on some real-world practices, below is my recommendation:
 
@@ -107,7 +107,7 @@ Based on some real-world practices, below is my recommendation:
 
 Here is an example:
 ```
-$ cd pcf-automation-configuration
+$ cd platform-automation-configuration
 $ tree .
 .
 └── dev
@@ -138,7 +138,7 @@ $ tree .
 
 > Note: 
 > 1. The `PRODUCT_NAME`s here follow the naming patterns in PCF, not Pivnet.
-> 2. For your convenience, there is already a sample Git for you to check out, [here](https://github.com/brightzheng100/pcf-automation-configuration).
+> 2. For your convenience, there is already a sample Git for you to check out, [here](https://github.com/brightzheng100/platform-automation-configuration).
 
 
 ## Pipelines
@@ -162,7 +162,7 @@ If you want to customize the pipeline, instead of changing the pipeline directly
 ```
 $ fly -t local set-pipeline -p install-opsman \
     -c <(cat install-opsman.yml | yaml-patch \
-            -o ops-files/resource-pcf-automation-tasks-git.yml) \
+            -o ops-files/resource-platform-automation-tasks-git.yml) \
     -l vars-dev/vars-install-opsman.yml
 ```
 
@@ -270,7 +270,7 @@ Screenshot looks like this:
 
 | Ops File  | Applicable To Pipelines  | Purpose |
 | --- | --- | --- |
-| [resource-pcf-automation-tasks-git.yml](ops-files/resource-pcf-automation-tasks-git.yml)  | ALL  | To host `pcf-automation` tasks in Git repo for necessary customization |
+| [resource-platform-automation-tasks-git.yml](ops-files/resource-platform-automation-tasks-git.yml)  | ALL  | To host `platform-automation` tasks in Git repo for necessary customization |
 | [resource-product-s3.yml](ops-files/resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |

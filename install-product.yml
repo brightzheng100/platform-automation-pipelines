@@ -16,24 +16,24 @@ resource_types:
     tag: latest-final
 
 resources:
-- name: pcf-automation-image
+- name: platform-automation-image
   type: s3
   source:
     endpoint: ((s3.endpoint))
     region_name: ((s3.region_name))
     access_key_id: ((s3.access_key_id))
     secret_access_key: ((s3.secret_access_key))
-    bucket: ((s3.buckets.pcf_automation))
+    bucket: ((s3.buckets.platform_automation))
     regexp: .*image-(.*).tgz
 
-- name: pcf-automation-tasks
+- name: platform-automation-tasks
   type: s3
   source:
     endpoint: ((s3.endpoint))
     region_name: ((s3.region_name))
     access_key_id: ((s3.access_key_id))
     secret_access_key: ((s3.secret_access_key))
-    bucket: ((s3.buckets.pcf_automation))
+    bucket: ((s3.buckets.platform_automation))
     regexp: .*tasks-(.*).zip
 
 - name: installation
@@ -71,8 +71,8 @@ resources:
 
 # reusable stuff
 credhub-interpolate: &credhub-interpolate
-  image: pcf-automation-image
-  file: pcf-automation-tasks/tasks/credhub-interpolate.yml
+  image: platform-automation-image
+  file: platform-automation-tasks/tasks/credhub-interpolate.yml
   input_mapping:
     files: configuration
   params:
@@ -89,10 +89,10 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       trigger: true
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: product
       params:
@@ -102,24 +102,24 @@ jobs:
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: upload-product
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-product.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/upload-product.yml
     input_mapping:
       product: product
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
   - task: stage-product
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/stage-product.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/stage-product.yml
     input_mapping:
       product: product
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
   - task: staged-config
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/staged-config.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-config.yml
     input_mapping:
       env: interpolated-files
     params:
@@ -129,8 +129,8 @@ jobs:
     on_success: &make-config-commit
       do:
         - task: make-commit
-          image: pcf-automation-image
-          file: pcf-automation-tasks/tasks/make-git-commit.yml
+          image: platform-automation-image
+          file: platform-automation-tasks/tasks/make-git-commit.yml
           input_mapping:
             repository: configuration
             file-source: generated-config
@@ -152,11 +152,11 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       passed: [upload-and-stage-product]
       trigger: true
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
     - get: product-stemcell
@@ -166,8 +166,8 @@ jobs:
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: upload-stemcell
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-stemcell.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/upload-stemcell.yml
     input_mapping:
       env: interpolated-files
       stemcell: product-stemcell
@@ -179,18 +179,18 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       passed: [upload-and-stage-product]
       trigger: true
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: staged-config
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/staged-config.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-config.yml
     input_mapping:
       env: interpolated-files
     params:
@@ -200,8 +200,8 @@ jobs:
     on_success: &make-config-commit
       do:
         - task: make-commit
-          image: pcf-automation-image
-          file: pcf-automation-tasks/tasks/make-git-commit.yml
+          image: platform-automation-image
+          file: platform-automation-tasks/tasks/make-git-commit.yml
           input_mapping:
             repository: configuration
             file-source: generated-config
@@ -223,17 +223,17 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       passed: [generate-product-config]
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: configure-product
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/configure-product.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/configure-product.yml
     input_mapping:
       config: configuration
       env: interpolated-files
@@ -248,25 +248,25 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       passed: [upload-stemcell, configure-product]
       #trigger: true
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: apply-product-changes
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/apply-changes.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/apply-changes.yml
     input_mapping:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
   - task: staged-config
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/staged-config.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-config.yml
     input_mapping:
       env: interpolated-files
     params:
@@ -280,18 +280,18 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pcf-automation-image
+    - get: platform-automation-image
       params: {unpack: true}
       passed: [apply-product-changes]
       trigger: true
-    - get: pcf-automation-tasks
+    - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: export-installation
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/export-installation.yml
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/export-installation.yml
     input_mapping:
       env: interpolated-files
     params:

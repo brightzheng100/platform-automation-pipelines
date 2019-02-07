@@ -1,0 +1,9 @@
+- op: replace  
+  path: /resources/name=platform-automation-tasks
+  value:
+    name: platform-automation-tasks
+    type: git
+    source:
+      private_key: ((git.private_key))
+      uri: ((git.platform_automation_tasks.uri))
+      branch: master

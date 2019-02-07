@@ -6,7 +6,7 @@ s3:
   secret_access_key: ((s3_secret_access_key))            # credhub: ((s3_secret_access_key))
   region_name: ""
   buckets:
-    pcf_automation: pcf-automation
+    platform_automation: platform-automation
     foundation: dev
     products: pivnet-products
 
@@ -34,10 +34,10 @@ credhub:
   interpolate_folders: "dev/config dev/env dev/vars"
 
 git:
-  pcf_automation_tasks:
-    uri: ssh://git@git.test:2222/bright/pcf-automation-tasks-v110.git
+  platform_automation_tasks:
+    uri: ssh://git@git.test:2222/bright/platform-automation-tasks-v110.git
   configuration:
-    uri: ssh://git@git.test:2222/bright/pcf-automation-configuration.git
+    uri: ssh://git@git.test:2222/bright/platform-automation-configuration.git
   user: 
     email: bright@bright.com
     username: ((git_user.username))
