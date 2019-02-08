@@ -56,7 +56,8 @@ And this is exactly what this repo is built for: `platform-automation`-powered *
 
 Git service is required to host some stuff like products' config files.
 
-It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them but please note that it may break the upgrade path of.
+It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them.
+Please note that it may break the upgrade path of `platform-automation` so think twice before doing this.
 
 [Gogs](https://gogs.io/) might be a good candidate while on-prem, or simply use any public ones, like GitHub -- don't forget, private repos are possible now, for free:)
 
@@ -156,6 +157,7 @@ The jobs involved in this pipeline include:
 
 ```
 $ fly -t local set-pipeline -p install-opsman \
+    -c install-opsman.yml \
     -l vars-dev/vars-install-opsman.yml
 ```
 
@@ -183,10 +185,11 @@ The jobs involved in this pipeline include:
 2. upgrade-opsman
 3. configure-director
 4. apply-changes
-5. export-installation-before
+5. export-installation-after
 
 ```
 $ fly -t local set-pipeline -p upgrade-opsman \
+    -c upgrade-opsman.yml \
     -l vars-dev/vars-upgrade-opsman.yml
 ```
 
@@ -211,6 +214,7 @@ The jobs involved in this pipeline include:
 As an example, below is to install PAS so we define it as `install-product-pas` and set it up by providing `vars-install-product-pas.yml`.
 ```
 $ fly -t local set-pipeline -p install-product-pas \
+    -c install-product.yml \
     -l vars-dev/vars-install-product-pas.yml
 ```
 
@@ -235,6 +239,7 @@ The jobs involved in this pipeline include:
 
 ```
 $ fly -t local set-pipeline -p upgrade-product-pas \
+    -c upgrade-product.yml \
     -l vars-dev/vars-upgrade-product-pas.yml
 ```
 
@@ -258,6 +263,7 @@ And the overall process can be automatically gone through once triggered.
 
 ```
 $ fly -t local set-pipeline -p patch-product-pas \
+    -c patch-product.yml \
     -l vars-dev/vars-patch-product-pas.yml
 ```
 
