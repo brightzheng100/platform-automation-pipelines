@@ -3,9 +3,10 @@
 
 A set of workable `platform-automation`-powered Concourse pipelines to drive PCF Platform & Tiles' **install**, **upgrade** and **patch** in an easy way!
 
-**Caution:**
-> This is simply a sharing of the experience while building Concourse pipelines to drive `platform-automation`.
-> Pivotal does not provide support for these pipelines. 
+**Disclaimers:**
+> **This is NOT an official guide for building pipelines on top of `platform-automation` -- there is no such a thing yet as of writing. Instead, this is simply a sharing of my own experience while building Concourse pipelines to drive `platform-automation` for Dojos and services.**
+> 
+> **Pivotal does NOT provide support for these pipelines.**
 
 **Important Notes:**
 > 1. If something is broken, please raise issues; and PRs are always welcome so that we can build better experience from a community-driven, best-effort basis;
@@ -55,7 +56,7 @@ And this is exactly what this repo is built for: `platform-automation`-powered *
 
 Git service is required to host some stuff like products' config files.
 
-It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them.
+It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them but please note that it may break the upgrade path of.
 
 [Gogs](https://gogs.io/) might be a good candidate while on-prem, or simply use any public ones, like GitHub -- don't forget, private repos are possible now, for free:)
 
@@ -270,7 +271,7 @@ Screenshot looks like this:
 
 | Ops File  | Applicable To Pipelines  | Purpose |
 | --- | --- | --- |
-| [resource-platform-automation-tasks-git.yml](ops-files/resource-platform-automation-tasks-git.yml)  | ALL  | To host `platform-automation` tasks in Git repo for necessary customization |
+| [resource-platform-automation-tasks-git.yml](ops-files/resource-platform-automation-tasks-git.yml)  | ALL  | To host `platform-automation` tasks in Git repo for necessary customization. Please note that it's NOT recommended as it may break the upgrade path for `platform-automation` |
 | [resource-product-s3.yml](ops-files/resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
