@@ -42,6 +42,10 @@ One of the major goals of building `platform-automation` is to simplify things a
 
 But if one thinks of the _best practices_ and/or _sustainable processes_, we _should_ prepare some or all of below items if there is a good fit.
 
+Here is a typical setup, for your reference:
+
+![typical-setup.png](screenshots/typical-setup.png)
+
 
 **[Concourse](https://concourse-ci.org/download.html) Server (Required)**
 
@@ -85,9 +89,9 @@ Install required tools in your laptop or the workspace:
 
 Before we `fly` Concourse pipelines, do consider to have a configuration Git repo to host things like `env.yml`, `auth.yml`, product config and vars files.
 
-Please refer [here](http://docs.pivotal.io/platform-automation/v1.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
+Please refer [here](http://docs.pivotal.io/platform-automation/v2.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
 
-Based on some real-world practices, below is my recommendation:
+Based on some real-world practices, below structure and naming pattern are my recommendation:
 
 ```
 ├── README.md
@@ -138,9 +142,11 @@ $ tree .
         └── pivotal-container-service-vars.yml
 ```
 
+For your convenience, there is already a sample Git repo for you to check out, [here](https://github.com/brightzheng100/platform-automation-configuration).
+
+
 > Note: 
 > 1. The `PRODUCT_NAME`s here follow the naming patterns in PCF, not Pivnet.
-> 2. For your convenience, there is already a sample Git for you to check out, [here](https://github.com/brightzheng100/platform-automation-configuration).
 
 
 ## Pipelines
