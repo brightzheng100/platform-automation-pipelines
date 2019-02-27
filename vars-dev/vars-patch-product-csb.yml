@@ -9,6 +9,7 @@ s3:
     platform_automation: platform-automation
     foundation: dev
     products: pivnet-products
+    stemcells: pivnet-stemcells
 
 product:
   # Pivnet-based
@@ -17,12 +18,14 @@ product:
   product_version: "1.2.0"
   product_globs: credhub*.pivotal
   # S3-based, enable and set below variables if using S3
-  #regexp: srt-*.pivotal
+  #regexp: credhub-service-broker-(1.2.*).pivotal
 
 stemcell:
   product_slug: stemcells
   product_version: "3586.65"
   product_globs: light-bosh-stemcell-*-google-*.tgz
+  # S3-based, enable and set below variables if using S3
+  #regexp: light-bosh-stemcell-(3586.*)-google-kvm-ubuntu-trusty-go_agent.tgz
 
 pivnet: 
   token: ((pivnet_token))

@@ -167,21 +167,12 @@ $ fly -t local set-pipeline -p install-opsman \
     -l vars-dev/vars-install-opsman.yml
 ```
 
-If you want to customize the pipeline, instead of changing the pipeline directly, use `yaml-patch` + ops-files:
-```
-$ fly -t local set-pipeline -p install-opsman \
-    -c <(cat install-opsman.yml | yaml-patch \
-            -o ops-files/resource-platform-automation-tasks-git.yml) \
-    -l vars-dev/vars-install-opsman.yml
-```
-
-> Note: the vars file here is just an example, please change it accordingly to meet your context.
+> Note: 
+> 1. The vars file here is just an example, please change it accordingly to meet your context;
+> 2. If you want to customize the pipeline, say to retrieve products and stemcells from S3 instead of default [Pivnet](https://network.pivotal.io), please refer to [here](#available-ops-files) for how.
 
 Screenshot looks like this:
 ![install-opsman.png](screenshots/install-opsman.png)
-
-> Note: please refer to [here](#available-ops-files) for available ops files from this repo to customize the pipelines if there is a need. It's common to add more to address customization needs.
-
 
 ### [upgrade-opsman](upgrade-opsman.yml)
 
@@ -198,8 +189,6 @@ $ fly -t local set-pipeline -p upgrade-opsman \
     -c upgrade-opsman.yml \
     -l vars-dev/vars-upgrade-opsman.yml
 ```
-
-> Note: the vars file here is just an example, please change it accordingly to meet your context.
 
 Screenshot looks like this:
 ![upgrade-opsman.png](screenshots/upgrade-opsman.png)
@@ -224,8 +213,6 @@ $ fly -t local set-pipeline -p install-product-pas \
     -l vars-dev/vars-install-product-pas.yml
 ```
 
-> Note: the vars file here is just an example, please change it accordingly to meet your context.
-
 Screenshot looks like this:
 ![install-product.png](screenshots/install-product.png)
 
@@ -249,8 +236,6 @@ $ fly -t local set-pipeline -p upgrade-product-pas \
     -l vars-dev/vars-upgrade-product-pas.yml
 ```
 
-> Note: the vars file here is just an example, please change it accordingly to meet your context.
-
 Screenshot looks like this:
 ![upgrade-product.png](screenshots/upgrade-product.png)
 
@@ -273,8 +258,6 @@ $ fly -t local set-pipeline -p patch-product-pas \
     -l vars-dev/vars-patch-product-pas.yml
 ```
 
-> Note: the vars file here is just an example, please change it accordingly to meet your context.
-
 Screenshot looks like this:
 ![patch-product.png](screenshots/patch-product.png)
 
@@ -285,5 +268,23 @@ Screenshot looks like this:
 | --- | --- | --- |
 | [resource-platform-automation-tasks-git.yml](ops-files/resource-platform-automation-tasks-git.yml)  | ALL  | To host `platform-automation` tasks in Git repo for necessary customization. Please note that it's NOT recommended as it may break the upgrade path for `platform-automation` |
 | [resource-product-s3.yml](ops-files/resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](https://network.pivotal.io) |
+| [resource-stemcell-s3.yml](ops-files/resource-stemcell-s3.yml)  | ALL  | To retrieve stemcells from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
+
+So how to use these ops files?
+
+Let's say you want to customize the `install-product-csb` pipeline so that it retrieves product and stemcell from S3 instead of default [Pivnet](https://network.pivotal.io), you may try using `yaml-patch` with ops-files:
+
+```
+$ fly -t local set-pipeline -p install-product-csb \
+    -c <(cat install-product.yml | yaml-patch \
+            -o ops-files/resource-product-s3.yml \
+            -o ops-files/resource-stemcell-s3.yml) \
+    -l vars-pcf-dev/vars-install-product-csb.yml
+```
+
+## Major Change Logs
+
+- [2019-02-07] Initial release
+- [2019-02-27] Added ops-files/resource-stemcell-s3.yml
