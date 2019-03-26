@@ -31,7 +31,7 @@ And I may gradually bring in more when needed.
 | --- | --- | --- | --- |
 | install-opsman  | Install OpsMan & Director | ops-manager | [install-opsman.yml](install-opsman.yml)  |
 | install-product | Install Products (Tiles) | Any Products (Tiles), including PAS and PKS | [install-product.yml](install-product.yml)  |
-| upgrade-opsman  | Upgrade OpsMan & Director | ops-manager | [upgrade-product.yml](upgrade-product.yml)  |
+| upgrade-opsman  | Upgrade OpsMan & Director | ops-manager | [upgrade-product.yml](upgrade-opsman.yml)  |
 | upgrade-product | Upgrade Products (Tiles) | Any Products (Tiles), including PAS and PKS  | [upgrade-product.yml](upgrade-product.yml)  |
 | patch-product   | Patch Products (Tiles) | Any Tiles, including PAS and PKS  | [patch-product.yml](patch-product.yml)  |
 
