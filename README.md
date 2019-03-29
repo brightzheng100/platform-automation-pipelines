@@ -116,7 +116,7 @@ For your convenience, there is already a sample Git repo for you to check out, [
 
 ## Pipelines
 
-### [install-opsman](intall-opsman.yml)
+### [install-opsman](install-opsman.yml)
 
 This pipeline is dedicated for installation of OpsMan and OpsMan Director.
 
@@ -147,7 +147,7 @@ Screenshot looks like this:
 ![upgrade-opsman.png](screenshots/upgrade-opsman.png)
 
 
-### [install-product](intall-product.yml)
+### [install-product](install-product.yml)
 
 This pipeline is a generic one by which you can install any PCF product by providing respective `*-vars.yml` file.
 
