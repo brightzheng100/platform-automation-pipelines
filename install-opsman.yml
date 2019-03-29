@@ -2,9 +2,10 @@
 
 # Jobs:
 # 1. create-opsman-and-configure-auth
-# 2. configure-director
-# 3. apply-director-changes
-# 4. export-installation
+# 2. generate-director-config
+# 3. configure-director
+# 4. apply-director-changes
+# 5. export-installation
 
 resource_types:
 - name: pivnet
@@ -81,7 +82,6 @@ jobs:
   - aggregate:
     - get: platform-automation-image
       params: {unpack: true}
-      trigger: true
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: product
@@ -133,15 +133,29 @@ jobs:
     params:
       ENV_FILE: ((foundation))/env/env.yml
       AUTH_CONFIG_FILE: ((foundation))/config/auth.yml
+
+# 2. generate-director-config
+- name: generate-director-config
+  serial: true
+  plan:
+  - aggregate:
+    - get: platform-automation-image
+      params: {unpack: true}
+      passed: [create-opsman-and-configure-auth]
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - task: credhub-interpolate
+    <<: *credhub-interpolate
+  - task: staged-director-config
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-director-config.yml
+    input_mapping:
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
     on_success: &make-config-commit
       do:
-        - task: staged-director-config
-          image: platform-automation-image
-          file: platform-automation-tasks/tasks/staged-director-config.yml
-          input_mapping:
-            env: interpolated-files
-          params:
-            ENV_FILE: ((foundation))/env/env.yml
         - task: make-commit
           image: platform-automation-image
           file: platform-automation-tasks/tasks/make-git-commit.yml
@@ -161,7 +175,7 @@ jobs:
             repository: configuration-commit
             merge: true
 
-# 2. configure-director
+# 3. configure-director
 - name: configure-director
   serial: true
   plan:
@@ -186,7 +200,7 @@ jobs:
       DIRECTOR_CONFIG_FILE: ((foundation))/products/director.yml
       VARS_FILES: vars/((foundation))/vars/director-vars.yml
 
-# 3. apply-director-changes
+# 4. apply-director-changes
 - name: apply-director-changes
   serial: true
   plan:
@@ -206,9 +220,8 @@ jobs:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
-    on_success: *make-config-commit
 
-# 4 export-installation
+# 5. export-installation
 - name: export-installation
   serial: true
   plan:
