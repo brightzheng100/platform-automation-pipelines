@@ -30,8 +30,8 @@ And I may gradually bring in more when needed.
 | Pipeline | Purposes | Compatible for PCF Products | Pipeline YAML File  |
 | --- | --- | --- | --- |
 | install-opsman  | Install OpsMan & Director | ops-manager | [install-opsman.yml](install-opsman.yml)  |
-| install-product | Install Products (Tiles) | Any Products (Tiles), including PAS and PKS | [install-product.yml](install-product.yml)  |
 | upgrade-opsman  | Upgrade OpsMan & Director | ops-manager | [upgrade-opsman.yml](upgrade-opsman.yml)  |
+| install-product | Install Products (Tiles) | Any Products (Tiles), including PAS and PKS | [install-product.yml](install-product.yml)  |
 | upgrade-product | Upgrade Products (Tiles) | Any Products (Tiles), including PAS and PKS  | [upgrade-product.yml](upgrade-product.yml)  |
 | patch-product   | Patch Products (Tiles) | Any Tiles, including PAS and PKS  | [patch-product.yml](patch-product.yml)  |
 
@@ -89,7 +89,7 @@ Install required tools in your laptop or the workspace:
 
 Before we `fly` Concourse pipelines, do consider to have a configuration Git repo to host things like `env.yml`, `auth.yml`, product config and vars files.
 
-Please refer [here](http://docs.pivotal.io/platform-automation/v2.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
+Please refer to [here](http://docs.pivotal.io/platform-automation/v2.1/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by version system like Git.
 
 Based on some real-world practices, below structure and naming pattern are my recommendation:
 
@@ -111,42 +111,7 @@ Based on some real-world practices, below structure and naming pattern are my re
 └── <ANOTHER FOUNDATION_NAME>
 ```
 
-Here is an example:
-```
-$ cd platform-automation-configuration
-$ tree .
-.
-└── dev
-    ├── config
-    │   └── auth.yml
-    ├── env
-    │   └── env.yml
-    ├── generated-config
-    │   ├── cf-2.2.11.yml
-    │   ├── credhub-service-broker-1.1.0.yml
-    │   ├── director-2.2.10.yml
-    │   └── director-2.3.5.yml
-    ├── products
-    │   ├── cf.yml
-    │   ├── credhub-service-broker.yml
-    │   ├── director.yml
-    │   ├── ops-manager.yml
-    │   └── pivotal-container-service.yml
-    ├── state
-    │   └── state.yml
-    └── vars
-        ├── cf-vars.yml
-        ├── credhub-service-broker-vars.yml
-        ├── director-vars.yml
-        ├── ops-manager-vars.yml
-        └── pivotal-container-service-vars.yml
-```
-
 For your convenience, there is already a sample Git repo for you to check out, [here](https://github.com/brightzheng100/platform-automation-configuration).
-
-
-> Note: 
-> 1. The `PRODUCT_NAME`s here follow the naming patterns in PCF, not Pivnet.
 
 
 ## Pipelines
@@ -154,12 +119,6 @@ For your convenience, there is already a sample Git repo for you to check out, [
 ### [install-opsman](intall-opsman.yml)
 
 This pipeline is dedicated for installation of OpsMan and OpsMan Director.
-
-The jobs involved in this pipeline include:
-1. create-opsman-and-configure-auth
-2. configure-director
-3. apply-director-changes
-4. export-installation
 
 ```
 $ fly -t local set-pipeline -p install-opsman \
@@ -176,13 +135,7 @@ Screenshot looks like this:
 
 ### [upgrade-opsman](upgrade-opsman.yml)
 
-This pipeline is for OpsMan upgrade which will of course upgrade OpsMan Director as well.
-The jobs involved in this pipeline include:
-1. export-installation-before
-2. upgrade-opsman
-3. configure-director
-4. apply-changes
-5. export-installation-after
+This pipeline is for OpsMan upgrade/patch which will of course upgrade/patch OpsMan Director as well.
 
 ```
 $ fly -t local set-pipeline -p upgrade-opsman \
@@ -198,14 +151,6 @@ Screenshot looks like this:
 
 This pipeline is a generic one by which you can install any PCF product by providing respective `*-vars.yml` file.
 
-The jobs involved in this pipeline include:
-1. upload-and-stage-product
-2. upload-stemcell
-3. generate-product-config
-4. configure-product
-5. apply-product-changes
-6. export-installation
-
 As an example, below is to install PAS so we define it as `install-product-pas` and set it up by providing `vars-install-product-pas.yml`.
 ```
 $ fly -t local set-pipeline -p install-product-pas \
@@ -220,15 +165,6 @@ Screenshot looks like this:
 ### [upgrade-product](upgrade-product.yml)
 
 This pipeline is for product major upgrade, say from PAS 2.3.x to PAS 2.4.x.
-The jobs involved in this pipeline include:
-1. upload-and-stage-product
-2. upload-stemcell
-3. configure-product
-4. apply-product-changes
-5. export-installation
-
-> Important Note: 
-> Major upgrade typically will incur some product config changes so `configure-product` should be triggered manually after fine-tuning the product config file under `/products` folder, for example `/products/cf.yml` by refering to the file generated from `generate-initial-staged-product-config` step.
 
 ```
 $ fly -t local set-pipeline -p upgrade-product-pas \
@@ -239,15 +175,12 @@ $ fly -t local set-pipeline -p upgrade-product-pas \
 Screenshot looks like this:
 ![upgrade-product.png](screenshots/upgrade-product.png)
 
+> Important Note: 
+> Major upgrade typically will incur some product config changes so `configure-product` should be triggered manually after tuning the product config file under `/products` folder, for example `/products/cf.yml` by refering to the file generated from `generate-initial-staged-product-config` step.
 
 ### [patch-product](patch-product.yml)
 
 This pipeline is for product minor upgrade, say from PAS 2.4.0 to PAS 2.4.2.
-The jobs involved in this pipeline include:
-1. upload-and-stage-product
-2. upload-stemcell
-3. apply-product-changes
-4. export-installation
 
 It's very similar to `upgrade-product` but can proceed without specific `configure-product` while patching.
 And the overall process can be automatically gone through once triggered.
@@ -274,14 +207,14 @@ Screenshot looks like this:
 
 So how to use these ops files?
 
-Let's say you want to customize the `install-product-csb` pipeline so that it retrieves product and stemcell from S3 instead of default [Pivnet](https://network.pivotal.io), you may try using `yaml-patch` with ops-files:
+Let's say you want to customize the `install-product-pas` pipeline so that it retrieves product and stemcell from S3 instead of default [Pivnet](https://network.pivotal.io), you may try using `yaml-patch` with ops-files:
 
 ```
-$ fly -t local set-pipeline -p install-product-csb \
+$ fly -t local set-pipeline -p install-product-pas \
     -c <(cat install-product.yml | yaml-patch \
             -o ops-files/resource-product-s3.yml \
             -o ops-files/resource-stemcell-s3.yml) \
-    -l vars-pcf-dev/vars-install-product-csb.yml
+    -l vars-dev/vars-install-product-pas.yml
 ```
 
 ## Major Change Logs
