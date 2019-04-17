@@ -93,8 +93,8 @@ Install required tools in your laptop or the workspace:
 ## S3 Bucket Practices
 
 To get started, we need some buckets pre-created:
-- platform-automation: the bucket to host `platform-automation` image file if you're not using Docker Registry for it
-- <FOUNDATION-CODE>, e.g. `prod`: one bucket per foundation is recommended for hosting the exported installation files etc.
+- `platform-automation`: the bucket to host `platform-automation` image file if you're not using Docker Registry for it
+- `<FOUNDATION-CODE>`, e.g. `prod`: one bucket per foundation is recommended for hosting the exported installation files etc.
 
 You may take a look at my below sample, where I use Minio by the way, for your reference:
 
