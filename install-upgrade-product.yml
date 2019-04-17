@@ -3,9 +3,10 @@
 # Jobs:
 # 1. upload-and-stage-product
 # 2. upload-stemcell
-# 3. configure-product
-# 4. apply-product-changes
-# 5. export-installation
+# 3. generate-product-config
+# 4. configure-product
+# 5. apply-product-changes
+# 6. export-installation
 
 resource_types:
 - name: pivnet
@@ -116,34 +117,6 @@ jobs:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
-  - task: staged-config
-    image: platform-automation-image
-    file: platform-automation-tasks/tasks/staged-config.yml
-    input_mapping:
-      env: interpolated-files
-    params:
-      PRODUCT_NAME: ((product.product_name))
-      ENV_FILE: ((foundation))/env/env.yml
-    on_success: &make-config-commit
-      do:
-        - task: make-commit
-          image: platform-automation-image
-          file: platform-automation-tasks/tasks/make-git-commit.yml
-          input_mapping:
-            repository: configuration
-            file-source: generated-config
-          output_mapping:
-            repository-commit: configuration-commit
-          params:
-            FILE_SOURCE_PATH: ((product.product_name)).yml
-            FILE_DESTINATION_PATH: ((foundation))/generated-config/((product.product_name))-((product.product_version)).yml
-            GIT_AUTHOR_EMAIL: ((git.user.email))
-            GIT_AUTHOR_NAME: ((git.user.username))
-            COMMIT_MESSAGE: "Add or update product config: ((product.product_name))-((product.product_version)).yml"
-        - put: configuration
-          params:
-            repository: configuration-commit
-            merge: true
 
 # 2. upload-stemcell
 - name: upload-stemcell
@@ -172,14 +145,58 @@ jobs:
     params:
       ENV_FILE: ((foundation))/env/env.yml
 
-# 3. configure-product
-- name: configure-product
+# 3. generate-product-config
+- name: generate-product-config
   serial: true
   plan:
   - aggregate:
     - get: platform-automation-image
       params: {unpack: true}
       passed: [upload-and-stage-product]
+      trigger: true
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - task: credhub-interpolate
+    <<: *credhub-interpolate
+  - task: staged-config
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-config.yml
+    input_mapping:
+      env: interpolated-files
+    params:
+      PRODUCT_NAME: ((product.product_name))
+      ENV_FILE: ((foundation))/env/env.yml
+      SUBSTITUTE_CREDENTIALS_WITH_PLACEHOLDERS: true
+    on_success: &make-config-commit
+      do:
+        - task: make-commit
+          image: platform-automation-image
+          file: platform-automation-tasks/tasks/make-git-commit.yml
+          input_mapping:
+            repository: configuration
+            file-source: generated-config
+          output_mapping:
+            repository-commit: configuration-commit
+          params:
+            FILE_SOURCE_PATH: ((product.product_name)).yml
+            FILE_DESTINATION_PATH: ((foundation))/generated-config/((product.product_name))-((product.product_version)).yml
+            GIT_AUTHOR_EMAIL: ((git.user.email))
+            GIT_AUTHOR_NAME: ((git.user.username))
+            COMMIT_MESSAGE: "Add or update product config: ((product.product_name))-((product.product_version)).yml"
+        - put: configuration
+          params:
+            repository: configuration-commit
+            merge: true
+
+# 4. configure-product
+- name: configure-product
+  serial: true
+  plan:
+  - aggregate:
+    - get: platform-automation-image
+      params: {unpack: true}
+      passed: [generate-product-config]
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
@@ -197,7 +214,7 @@ jobs:
       VARS_FILES: vars/((foundation))/vars/((product.product_name))-vars.yml
       ENV_FILE: ((foundation))/env/env.yml
 
-# 4. apply-product-changes
+# 5. apply-product-changes
 - name: apply-product-changes
   serial: true
   plan:
@@ -227,7 +244,7 @@ jobs:
       ENV_FILE: ((foundation))/env/env.yml
     on_success: *make-config-commit
 
-# 5. export-installation
+# 6. export-installation
 - name: export-installation
   serial: true
   plan:

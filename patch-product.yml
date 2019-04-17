@@ -91,11 +91,12 @@ jobs:
       params: {unpack: true}
     - get: platform-automation-tasks
       params: {unpack: true}
+    - get: configuration
     - get: product
       params:
         globs:
         - "((product.product_globs))"
-    - get: configuration
+      trigger: true
   - task: credhub-interpolate
     <<: *credhub-interpolate
   - task: upload-product
