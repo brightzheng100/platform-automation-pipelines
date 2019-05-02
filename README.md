@@ -211,7 +211,8 @@ Screenshot looks like this:
 | [resource-product-s3.yml](ops-files/resource-product-s3.yml)  | ALL  | To retrieve products from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-stemcell-s3.yml](ops-files/resource-stemcell-s3.yml)  | ALL  | To retrieve stemcells from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
-| [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
+| [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting variable of `((job_name))` one time only |
+| [resource-gcs.yml](ops-files/resource-gcs.yml)  | ALL  | Will switch from S3 to Google Cloud Storage for Platform Automation image and tasks as well as install exports |
 
 So how to use these ops files?
 
