@@ -215,7 +215,7 @@ Screenshot looks like this:
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
 | [task-apply-changes.yml](ops-files/task-apply-changes.yml)  | ALL Product Pipelines  | To enable selective apply changes with errand control. Use with caution! |
-| [task-configure-authentication-ldap.yml](ops-files/task-configure-authentication-ldap.yml)  | Install OpsMan Pipeline  | To configure OpsMan authentiction with LDAP |
+| [task-configure-authentication-ldap.yml](ops-files/task-configure-authentication-ldap.yml)  | Install OpsMan Pipeline  | To configure OpsMan authentication with LDAP/AD |
 
 So how to use these ops files?
 
@@ -233,7 +233,7 @@ $ fly -t local set-pipeline -p install-product-pas \
 
 In most of the cases, customization can be handled by applying ops-files, be it from above list or your own.
 
-But sometimes, field engineering might be more aggresive/demanding/time-sensitive than product engineering so you may want to introduce more features to address some specific concerns by doing something -- other than actively sending feedback to product teams, you may think of some way of customization.
+But sometimes, field engineering might be more aggressive/demanding/time-sensitive than product engineering so you may want to introduce more features to address some specific concerns by doing something -- other than actively sending feedback to product teams, you may think of some way of customization.
 
 But rule no.1 is that whatever you do, don't break the upgrade path!
 
@@ -267,8 +267,8 @@ $ fly -t dev set-pipeline -p install-product-harbor \
 
 - [2019-02-07] Initial release
 - [2019-02-27] Added ops-files/resource-stemcell-s3.yml
-- [2019-04-17] Merged `install-product.yaml` and `upgrade-product.yaml` as one pipeline: `install-upgrade-product.yaml`
-- [2019-05-05] Added selective apply changes with optional errand control
+- [2019-04-17] Merged `install-product.yaml` and `upgrade-product.yaml` as one: `install-upgrade-product.yaml`
+- [2019-05-05] Added selective apply changes with optional errand control mechanism
 
 
 ## Maintainer
