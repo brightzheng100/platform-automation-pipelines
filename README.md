@@ -103,7 +103,7 @@ $ mc ls -r pcf/
 [2019-04-01 20:40:57 PDT] 2.5MiB prod/installation-after-harbor-container-registry-1.7.4.zip
 [2019-03-25 23:19:04 PDT] 274KiB prod/installation-after-ops-manager-2.4.4.zip
 [2019-03-28 20:54:48 PDT] 2.3MiB prod/installation-after-pivotal-container-service-1.3.2.zip
-[2019-03-20 22:43:35 PDT] 398MiB platform-automation/platform-automation-image-2.1.1-beta.1.tgz
+[2019-03-20 22:43:35 PDT] 398MiB platform-automation/platform-automation-image-2.2.0-beta.1.tgz
 ```
 
 
@@ -122,6 +122,8 @@ Based on some real-world practices, below structure and naming pattern are my re
 │    │   └── auth.yml
 │    ├── env
 │    │   └── env.yml
+│    ├── errands
+│    │   └── <PRODUCT-NAME>.yml
 │    ├── generated-config
 │    │   ├── <PRODUCT-NAME>-<PRODUCT-VERSION>.yml
 │    ├── products
@@ -212,6 +214,8 @@ Screenshot looks like this:
 | [resource-stemcell-s3.yml](ops-files/resource-stemcell-s3.yml)  | ALL  | To retrieve stemcells from S3, instead of [Pivnet](https://network.pivotal.io) |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
+| [task-apply-changes.yml](ops-files/task-apply-changes.yml)  | ALL Product Pipelines  | To enable selective apply changes with errand control. Use with caution! |
+| [task-configure-authentication-ldap.yml](ops-files/task-configure-authentication-ldap.yml)  | Install OpsMan Pipeline  | To configure OpsMan authentiction with LDAP |
 
 So how to use these ops files?
 
@@ -225,12 +229,46 @@ $ fly -t local set-pipeline -p install-product-pas \
     -l vars-dev/vars-install-product-pas.yml
 ```
 
+## Further Customization
+
+In most of the cases, customization can be handled by applying ops-files, be it from above list or your own.
+
+But sometimes, field engineering might be more aggresive/demanding/time-sensitive than product engineering so you may want to introduce more features to address some specific concerns by doing something -- other than actively sending feedback to product teams, you may think of some way of customization.
+
+But rule no.1 is that whatever you do, don't break the upgrade path!
+
+### Custom Tasks
+
+Platform automation is built on top of two major CLIs: `p-automator` and [`om`](https://github.com/pivotal-cf/om).
+
+And there are a series of fine-grained `Concourse` tasks built on top of them with **standardized** inputs/outputs, plus very minimum bash scripts.
+
+So adding your tasks might be a potential area that we _may_ think of in terms of customization.
+
+For example, I did one to enable selective apply changes in platform automation especially when the platform has grown to some level with more and more products/tiles.
+
+Below is my experiment, for your reference:
+
+1. As I'm using Git to host tasks unzipped from `platform-automation-tasks-*.zip`, create another folder named `custom-tasks`;
+2. Copy my custom task [`apply-changes.yml`](tasks/apply-changes.yml) into it and check it in;
+3. Compile a simple ops-file [`ops-files/task-apply-changes.yml`](ops-files/task-apply-changes.yml);
+4. `fly` the pipeline with this ops-file enabled:
+```
+$ fly -t dev set-pipeline -p install-product-harbor \
+    -c <(cat install-upgrade-product.yml | yaml-patch \
+            -o ops-files/resource-platform-automation-tasks-git.yml \
+            -o ops-files/task-apply-changes.yml) \
+    -l vars-dev/vars-install-product-harbor.yml
+```
+5. The bonus is, you can control the errands as well by compiling an errand control config file `<PRODUCT_NAME>.yml` in `/errands` folder in your `platform-automation-configuration` repo, like the samples [here](https://github.com/brightzheng100/platform-automation-configuration/tree/master/dev/errands).
+
 
 ## Major Change Logs
 
 - [2019-02-07] Initial release
 - [2019-02-27] Added ops-files/resource-stemcell-s3.yml
 - [2019-04-17] Merged `install-product.yaml` and `upgrade-product.yaml` as one pipeline: `install-upgrade-product.yaml`
+- [2019-05-05] Added selective apply changes with optional errand control
 
 
 ## Maintainer

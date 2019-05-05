@@ -1,0 +1,51 @@
+# The inputs, outputs, params, filename, and filepath
+# of this task file are part of its semantically versioned API.
+# See our documentation for a detailed discussion of our semver API.
+# See www.semver.org for an explanation of semantic versioning.
+
+# code_snippet apply-changes start yaml
+---
+platform: linux
+
+inputs:
+- name: config  # contains the product configuration file
+- name: env     # contains the env file with target OpsMan Information
+
+params:
+  ENV_FILE: env.yml
+  # - Filepath of the env config YAML
+  # - The path is relative to root of the `env` input
+  PRODUCT_NAMES:
+  # - Optional
+  # - Specify the product name(s) with comma delimited to enable selective apply-changes
+  ERRAND_CONFIG_FILE:
+  # - Optional
+  # - Config file to turn on or off errands for products while apply-product-changes
+  # - Ref: https://github.com/pivotal-cf/om/tree/master/docs/apply-changes
+
+run:
+  path: bash
+  args:
+  - "-c"
+  - |
+    cat /var/version && echo ""
+    set -eux
+
+    product_names=""
+    if [ "${PRODUCT_NAMES}" ];
+    then
+      for product_name in ${PRODUCT_NAMES//,/ }
+      do
+        product_names+="--product-name ${product_name} "
+      done
+    fi
+
+    errand_config_file=""
+    if [ -f "config/${ERRAND_CONFIG_FILE}" ];
+    then errand_config_file="--config config/"${ERRAND_CONFIG_FILE}" ";
+    fi
+
+    om --env env/"${ENV_FILE}" apply-changes \
+      ${product_names} ${errand_config_file}
+
+# code_snippet apply-changes end
