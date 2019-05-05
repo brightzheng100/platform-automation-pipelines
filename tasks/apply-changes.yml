@@ -17,10 +17,12 @@ params:
   # - The path is relative to root of the `env` input
   PRODUCT_NAMES:
   # - Optional
-  # - Specify the product name(s) with comma delimited to enable selective apply-changes
+  # - Specify the comma delimited product name(s) to enable selective apply-changes
+  # - Example: "pivotal-container-service,harbor-container-registry"
   ERRAND_CONFIG_FILE:
   # - Optional
-  # - Config file to turn on or off errands for products while apply-product-changes
+  # - Config file, based on `config/`, to turn on/off errands for products you are deploying
+  # - Example: "dev/errands/harbor-container-registry.yml"
   # - Ref: https://github.com/pivotal-cf/om/tree/master/docs/apply-changes
 
 run:
@@ -42,7 +44,8 @@ run:
 
     errand_config_file=""
     if [ -f "config/${ERRAND_CONFIG_FILE}" ];
-    then errand_config_file="--config config/"${ERRAND_CONFIG_FILE}" ";
+    then
+      errand_config_file="--config config/"${ERRAND_CONFIG_FILE}" ";
     fi
 
     om --env env/"${ENV_FILE}" apply-changes \
