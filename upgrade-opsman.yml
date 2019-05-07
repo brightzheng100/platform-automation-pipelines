@@ -5,7 +5,7 @@
 # 2. upgrade-opsman
 # 3. configure-director
 # 4. apply-changes
-# 5. export-installation-before
+# 5. export-installation-after
 
 resource_types:
 - name: pivnet
