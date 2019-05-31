@@ -1,0 +1,35 @@
+---
+
+foundation: dev                                       # current foundation code
+
+s3:
+  endpoint: https://your-s3-url                       # the S3 endpoint
+  access_key_id: ((s3_access_key_id))                 # credhub: ((s3_access_key_id))
+  secret_access_key: ((s3_secret_access_key))         # credhub: ((s3_secret_access_key))
+  region_name: ""                                     # optional, regin name
+  buckets:
+    platform_automation: platform-automation          # map bucket for platform-automation artifacts (e.g. image)
+    foundation: dev                                   # map bucket for current foundation for hosting exported installation-*.zip files
+
+credhub:
+  server: https://your-credhub-server-url             # CredHub endpoint
+  ca_cert: ((credhub_ca_cert.certificate))            # CA Cert from CredHub
+  client: ((credhub_client.username))                 # UAA Client for CredHub access
+  secret: ((credhub_client.password))                 # UAA secret for CredHub access
+  interpolate_folders: "dev/config dev/env dev/vars"  # The folders from configuration repo (see below git.configuration) to be interpolated
+
+git:
+  configuration:                                      # The configuration repo
+    uri: "git@your-git-server:your-user/platform-automation-configurationgit"
+    products_file: products.yml                       # The products yaml file that used to track for version changes
+  user:                                               # The user for access to configuration repo
+    email: robot@company.com                          # a dummy email will work if we're using private_key for authentication
+    username: ((git_user.username))                   # a dummy username will work if we're using private_key for authentication
+    #password: ((git_user.password))                  # optional if we're using private_key for authentication
+  private_key: ((git_private_key.private_key))        # The private for access to configuration repo
+
+schedule:
+  patch:                                              # Patch scheduler, the whole chunk will be used as ((schedule.patch))
+    start: 12:00 AM                                   # by following Time Resource https://github.com/concourse/time-resource
+    stop: 1:00 AM
+    location: Asia/Singapore

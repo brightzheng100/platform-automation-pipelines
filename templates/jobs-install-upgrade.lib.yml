@@ -1,0 +1,227 @@
+#! jobs template
+
+#@ load("functions.lib.yml", "products")
+
+#@ def credhub_interpolate():
+
+task: credhub-interpolate
+image: platform-automation-image
+file: platform-automation-tasks/tasks/credhub-interpolate.yml
+input_mapping:
+  files: configuration
+params:
+  CREDHUB_SERVER: ((credhub.server))
+  CREDHUB_CA_CERT: ((credhub.ca_cert))
+  CREDHUB_CLIENT: ((credhub.client))
+  CREDHUB_SECRET: ((credhub.secret))
+  PREFIX: /concourse/((foundation))
+  INTERPOLATION_PATHS: ((credhub.interpolate_folders))
+
+#@ end
+#! end of def credhub_interpolate():
+
+
+#@ def make_config_commit(product_slug, product_name):
+do:
+  - task: make-commit
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/make-git-commit.yml
+    input_mapping:
+      repository: configuration
+      file-source: generated-config
+    output_mapping:
+      repository-commit: configuration-commit
+    params:
+      FILE_SOURCE_PATH: #@ "{}.yml".format(product_name)
+      FILE_DESTINATION_PATH: #@ "((foundation))/generated-config/{}.yml".format(product_slug)
+      GIT_AUTHOR_EMAIL: ((git.user.email))
+      GIT_AUTHOR_NAME: ((git.user.username))
+      COMMIT_MESSAGE: #@ "Add or update product config: {}.yml".format(product_slug)
+  - put: configuration
+    params:
+      repository: configuration-commit
+      merge: true
+
+#@ end
+#! end of def make_config_commit(product_slug, product_name):
+
+
+jobs:
+
+#@ def jobs():
+
+#@ for product in products():
+
+#@ alias_slug_name="{}".format(product).split("|")
+#@ product_alias=alias_slug_name[0]
+#@ product_slug=alias_slug_name[1]
+#@ product_name=product_slug
+#@ if len(alias_slug_name)==3:
+#@ product_name=alias_slug_name[2]
+#@ end
+
+#! 1. download-upload-stage-product
+- name: #@ "download-upload-stage-product-{}".format(product_alias)
+  #! serial_groups: [download-upload-stage-product]
+  serial_groups:
+  - download-upload-stage-product
+  serial: true
+  plan:
+  - aggregate:
+    - get: #@ "product-config-{}".format(product_alias)
+      trigger: true
+    - get: platform-automation-image
+      params: {unpack: true}
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - #@ credhub_interpolate()
+  - task: download-product
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/download-product.yml
+    input_mapping:
+      config: #@ "product-config-{}".format(product_alias)
+      vars: interpolated-files
+    params:
+      CONFIG_FILE: semver-config.yaml
+      VARS_FILES: vars/((foundation))/config/global.yml
+  - task: upload-product
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/upload-product.yml
+    input_mapping:
+      product: downloaded-product
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+  - task: stage-product
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/stage-product.yml
+    input_mapping:
+      product: downloaded-product
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+  - task: upload-stemcell
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/upload-stemcell.yml
+    input_mapping:
+      env: interpolated-files
+      stemcell: downloaded-stemcell
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+
+#! 2. generate-product-config
+- name: #@ "generate-product-config-{}".format(product_alias)
+  serial_groups:
+  - generate-product-config
+  serial: true
+  plan:
+  - aggregate:
+    - get: #@ "product-config-{}".format(product_alias)
+      passed: 
+      - #@ "download-upload-stage-product-{}".format(product_alias)
+      trigger: true
+    - get: platform-automation-image
+      params: {unpack: true}
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - #@ credhub_interpolate()
+  - task: staged-config
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/staged-config.yml
+    input_mapping:
+      env: interpolated-files
+    params:
+      PRODUCT_NAME: #@ "{}".format(product_name)
+      ENV_FILE: ((foundation))/env/env.yml
+    on_success: #@ make_config_commit(product_slug, product_name)
+
+#! 3. configure-product
+- name: #@ "configure-product-{}".format(product_alias)
+  serial_groups:
+  - configure-product
+  serial: true
+  plan:
+  - aggregate:
+    - get: #@ "product-config-{}".format(product_alias)
+      passed:
+      - #@ "generate-product-config-{}".format(product_alias)
+    - get: platform-automation-image
+      params: {unpack: true}
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - #@ credhub_interpolate()
+  - task: configure-product
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/configure-product.yml
+    input_mapping:
+      config: configuration
+      env: interpolated-files
+      vars: interpolated-files
+    params:
+      CONFIG_FILE: #@ "((foundation))/products/{}.yml".format(product_slug)
+      VARS_FILES: #@ "vars/((foundation))/vars/{}-vars.yml".format(product_slug)
+      ENV_FILE: ((foundation))/env/env.yml
+
+#@ end
+#! end of for product in products():
+
+#! 4. apply-product-changes
+- name: apply-product-changes
+  serial: true
+  plan:
+  - aggregate:
+      #@ for product in products():
+      #@ product_alias="{}".format(product).split("|")[0]
+    - get: #@ "product-config-{}".format(product_alias)
+      passed:
+      - #@ "configure-product-{}".format(product_alias)
+      #@ end
+    - get: platform-automation-image
+      params: {unpack: true}
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - #@ credhub_interpolate()
+  - task: apply-product-changes
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/apply-changes.yml
+    input_mapping:
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+
+#! 5. export-installation
+- name: export-installation
+  serial: true
+  plan:
+  - aggregate:
+      #@ for product in products():
+      #@ product_alias="{}".format(product).split("|")[0]
+    - get: #@ "product-config-{}".format(product_alias)
+      passed:
+      - apply-product-changes
+      trigger: true
+      #@ end
+    - get: platform-automation-image
+      params: {unpack: true}
+      passed: [apply-product-changes]
+    - get: platform-automation-tasks
+      params: {unpack: true}
+    - get: configuration
+  - #@ credhub_interpolate()
+  - task: export-installation
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/export-installation.yml
+    input_mapping:
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+  - put: installation
+    params:
+      file: installation/installation-*.zip
+
+#@ end
+#! end of def jobs():

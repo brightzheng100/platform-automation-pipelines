@@ -1,0 +1,70 @@
+#! resources template
+
+#@ load("functions.lib.yml", "products")
+
+resources:
+
+#@ def resources():
+
+- name: platform-automation-tasks
+  type: s3
+  source:
+    endpoint: ((s3.endpoint))
+    region_name: ((s3.region_name))
+    access_key_id: ((s3.access_key_id))
+    secret_access_key: ((s3.secret_access_key))
+    bucket: ((s3.buckets.platform_automation))
+    regexp: .*tasks-(.*).zip
+
+- name: platform-automation-image
+  type: s3
+  source:
+    endpoint: ((s3.endpoint))
+    region_name: ((s3.region_name))
+    access_key_id: ((s3.access_key_id))
+    secret_access_key: ((s3.secret_access_key))
+    bucket: ((s3.buckets.platform_automation))
+    regexp: .*image-(.*).tgz
+
+- name: installation
+  type: s3
+  source:
+    endpoint: ((s3.endpoint))
+    region_name: ((s3.region_name))
+    access_key_id: ((s3.access_key_id))
+    secret_access_key: ((s3.secret_access_key))
+    bucket: ((s3.buckets.foundation))
+    regexp: installation-(.*).zip
+
+- name: configuration
+  type: git
+  source:
+    private_key: ((git.private_key))
+    uri: ((git.configuration.uri))
+    branch: master
+
+
+#! product related resourses
+
+#@ for product in products():
+
+#@ product_alias="{}".format(product).split("|")[0]
+#@ product_slug="{}".format(product).split("|")[1]
+
+- name: #@ "product-config-{}".format(product_alias)
+  type: semver-config
+  source:
+    driver: git
+    uri: ((git.configuration.uri))
+    branch: master
+    private_key: ((git.private_key))
+    config_file: ((foundation))/((git.configuration.products_file))
+    config_path: #@ "products.{}".format(product_alias)
+    version_path: #@ "products.{}.product-version".format(product_alias)
+    version_pattern: "m.n.*"
+
+#@ end
+#! end of for product in products():
+
+#@ end
+#! end of def resources():
