@@ -234,7 +234,7 @@ Screenshot looks like this:
 ![install-opsman.png](screenshots/install-opsman.png)
 
 
-#### [`upgrade-opsman` Pipeline ](pipelines/upgrade-opsman.yml)
+#### [`upgrade-opsman` Pipeline](pipelines/upgrade-opsman.yml)
 
 This pipeline is for OpsMan upgrade/patch which will of course upgrade/patch OpsMan Director as well.
 
@@ -245,12 +245,12 @@ $ ./2-fly-upgrade-opsman.sh dev dev upgrade-pipeline
 Screenshot looks like this:
 ![upgrade-opsman.png](screenshots/upgrade-opsman.png)
 
-> Note: don't be surprise if the `upgrade-opsman` would run first time, after you `fly`, without any version upgrade -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform. 
+> Note: don't be surprised if the `upgrade-opsman` would run first time, after you `fly`, without any version upgrade -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform. 
 
 
 ### 2 x Products Related Pipelines
 
-#### [`install-upgrade-products` Pipelines](pipelines/install-upgrade-products.yml)
+#### [`install-upgrade-products` Pipeline](pipelines/install-upgrade-products.yml)
 
 This is a templatized pipeline.
 
@@ -265,7 +265,7 @@ Screenshot looks like this:
 
 > Note: there are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
 
-#### [`patch-products` Pipelines](pipelines/patch-products.yml)
+#### [`patch-products` Pipeline](pipelines/patch-products.yml)
 
 This is also a templatized pipeline, which would respect all the setup of `install-upgrade-products` but is dedicated for **patch**.
 
@@ -279,7 +279,7 @@ Screenshot looks like this:
 ![patch-products.gif](screenshots/patch-products.gif)
 
 > Note: 
-> 1. Don't be surprise if the `patch-products` would automatically run first time, after you `fly`, without any version patch -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform.
+> 1. Don't be surprised if the `patch-products` would automatically run first time, after you `fly`, without any version patch -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform.
 > 2. There are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
 
 #### The Configurability for Products
