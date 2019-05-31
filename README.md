@@ -220,7 +220,7 @@ For those, say `s3_secret_access_key`, `git_private_key`, we should store and ma
 
 ### 2 x OpsMan Related Pipelines
 
-#### [`install-opsman` Pipeline](pipelines/install-opsman.yml)
+#### [The `install-opsman` Pipeline](pipelines/install-opsman.yml)
 
 This pipeline is dedicated for installation of OpsMan and OpsMan Director.
 
@@ -234,7 +234,7 @@ Screenshot looks like this:
 ![install-opsman.png](screenshots/install-opsman.png)
 
 
-#### [`upgrade-opsman` Pipeline](pipelines/upgrade-opsman.yml)
+#### [The `upgrade-opsman` Pipeline ](pipelines/upgrade-opsman.yml)
 
 This pipeline is for OpsMan upgrade/patch which will of course upgrade/patch OpsMan Director as well.
 
@@ -250,7 +250,7 @@ Screenshot looks like this:
 
 ### 2 x Products Related Pipelines
 
-#### [`install-upgrade-products` Pipeline](pipelines/install-upgrade-products.yml)
+#### [The `install-upgrade-products` Pipeline](pipelines/install-upgrade-products.yml)
 
 This is a templatized pipeline.
 
@@ -265,7 +265,7 @@ Screenshot looks like this:
 
 > Note: there are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
 
-#### [`patch-products` Pipeline](pipelines/patch-products.yml)
+#### [The `patch-products` Pipeline](pipelines/patch-products.yml)
 
 This is also a templatized pipeline, which would respect all the setup of `install-upgrade-products` but is dedicated for **patch**.
 
