@@ -1,18 +1,12 @@
 ---
 
-# Jobs:
-# 1. export-installation-before
-# 2. upgrade-opsman
-# 3. configure-director
-# 4. apply-changes
-# 5. export-installation-after
-
 resource_types:
-- name: pivnet
+# A custom Concourse Resource type for detecting Semver-based config
+# Ref: https://github.com/brightzheng100/semver-config-concourse-resource
+- name: semver-config
   type: docker-image
   source:
-    repository: pivotalcf/pivnet-resource
-    tag: latest-final
+    repository: itstarting/semver-config-concourse-resource
 
 resources:
 - name: platform-automation-tasks
@@ -55,13 +49,17 @@ resources:
     bucket: ((s3.buckets.foundation))
     regexp: installation-after-(.*).zip
 
-- name: product
-  type: pivnet
+- name: product-config-opsman
+  type: semver-config
   source:
-    api_token: ((pivnet.token))
-    product_slug: ((product.product_slug))
-    product_version: ((product.product_version))
-    sort_by: semver
+    driver: git
+    uri: ((git.configuration.uri))
+    branch: master
+    private_key: ((git.private_key))
+    config_file: ((foundation))/products.yml
+    config_path: products.opsman
+    version_path: products.opsman.product-version
+    version_pattern: "m.n.p"
 
 - name: configuration
   type: git
@@ -91,9 +89,10 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: product-config-opsman
+      trigger: true
     - get: platform-automation-image
       params: {unpack: true}
-      trigger: true
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
@@ -106,45 +105,52 @@ jobs:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
-      INSTALLATION_FILE: installation-before-((product.product_slug))-((product.product_version)).zip
+      INSTALLATION_FILE: installation-before-ops-manager-upgrade.zip
   - put: installation-before
     params:
-      file: installation/installation-before-((product.product_slug))-((product.product_version)).zip
+      file: installation/installation-before-ops-manager-upgrade.zip
 
 # 2. upgrade-opsman
 - name: upgrade-opsman
   serial: true
   plan:
   - aggregate:
+    - get: product-config-opsman
+      passed: [export-installation-before]
+      trigger: true
     - get: platform-automation-image
       params: {unpack: true}
-      passed: [export-installation-before]
     - get: platform-automation-tasks
       params: {unpack: true}
-    - get: product
-      params:
-        globs:
-        - "((product.product_globs))"
     - get: installation-before
     - get: configuration
   - task: credhub-interpolate
     <<: *credhub-interpolate
+  - task: download-product
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/download-product.yml
+    input_mapping:
+      config: product-config-opsman
+      vars: interpolated-files
+    params:
+      CONFIG_FILE: semver-config.yaml
+      VARS_FILES: vars/((foundation))/config/global.yml
   - task: upgrade-opsman
     image: platform-automation-image
     file: platform-automation-tasks/tasks/upgrade-opsman.yml
     input_mapping:
-      image: product
+      image: downloaded-product
       state: configuration
       config: configuration
       env: interpolated-files
       vars: interpolated-files
       installation: installation-before
     params:
-      OPSMAN_CONFIG_FILE: ((foundation))/products/((product.product_slug)).yml
-      VARS_FILES: vars/((foundation))/vars/((product.product_slug))-vars.yml
+      OPSMAN_CONFIG_FILE: ((foundation))/products/ops-manager.yml
+      VARS_FILES: vars/((foundation))/vars/ops-manager-vars.yml
       ENV_FILE: ((foundation))/env/env.yml
       STATE_FILE: ((foundation))/state/state.yml
-      INSTALLATION_FILE: installation-before-((product.product_slug))-((product.product_version)).zip
+      INSTALLATION_FILE: installation-before-ops-manager-upgrade.zip
     on_success:
       do:
         - task: make-commit-state
@@ -160,7 +166,7 @@ jobs:
             FILE_DESTINATION_PATH: ((foundation))/state/state.yml
             GIT_AUTHOR_EMAIL: ((git.user.email))
             GIT_AUTHOR_NAME: ((git.user.username))
-            COMMIT_MESSAGE: "Update state file after ((product.product_slug))-((product.product_version))"
+            COMMIT_MESSAGE: "Update state file after ops-manager upgrade"
         - put: configuration
           params:
             repository: configuration-commit-state
@@ -182,10 +188,10 @@ jobs:
             repository-commit: configuration-commit
           params:
             FILE_SOURCE_PATH: director.yml
-            FILE_DESTINATION_PATH: ((foundation))/generated-config/director-((product.product_version)).yml
+            FILE_DESTINATION_PATH: ((foundation))/generated-config/director.yml
             GIT_AUTHOR_EMAIL: ((git.user.email))
             GIT_AUTHOR_NAME: ((git.user.username))
-            COMMIT_MESSAGE: "Add or update product config: director-((product.product_version)).yml"
+            COMMIT_MESSAGE: "Add or update product config: director.yml"
         - put: configuration
           params:
             repository: configuration-commit
@@ -196,9 +202,11 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: product-config-opsman
+      passed: [upgrade-opsman]
+      trigger: true
     - get: platform-automation-image
       params: {unpack: true}
-      passed: [upgrade-opsman]
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
@@ -221,9 +229,10 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: product-config-opsman
+      passed: [configure-director]
     - get: platform-automation-image
       params: {unpack: true}
-      passed: [configure-director]
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
@@ -255,10 +264,10 @@ jobs:
             repository-commit: configuration-commit
           params:
             FILE_SOURCE_PATH: director.yml
-            FILE_DESTINATION_PATH: ((foundation))/generated-config/director-((product.product_version)).yml
+            FILE_DESTINATION_PATH: ((foundation))/generated-config/director.yml
             GIT_AUTHOR_EMAIL: ((git.user.email))
             GIT_AUTHOR_NAME: ((git.user.username))
-            COMMIT_MESSAGE: "Add or update product config: director-((product.product_version)).yml"
+            COMMIT_MESSAGE: "Add or update product config: director.yml"
         - put: configuration
           params:
             repository: configuration-commit
@@ -269,10 +278,11 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: product-config-opsman
+      passed: [apply-director-changes]
+      trigger: true
     - get: platform-automation-image
       params: {unpack: true}
-      trigger: true
-      passed: [apply-director-changes]
     - get: platform-automation-tasks
       params: {unpack: true}
     - get: configuration
@@ -285,7 +295,7 @@ jobs:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
-      INSTALLATION_FILE: installation-after-((product.product_slug))-((product.product_version)).zip
+      INSTALLATION_FILE: installation-after-ops-manager-upgrade.zip
   - put: installation-after
     params:
-      file: installation/installation-after-((product.product_slug))-((product.product_version)).zip
+      file: installation/installation-after-ops-manager-upgrade.zip
