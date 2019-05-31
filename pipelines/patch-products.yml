@@ -1,0 +1,22 @@
+#! ----------------------------------------------------
+#! master pipeline file for `patch-products`
+#! ----------------------------------------------------
+
+#@ load("groups.lib.yml", "groups_for_patch_products")
+#@ load("resource-types.lib.yml", "resource_types")
+#@ load("resources-patch.lib.yml", "resources")
+#@ load("jobs-patch.lib.yml", "jobs")
+
+---
+
+#! groups
+groups: #@ groups_for_patch_products()
+
+#! resource_types
+resource_types: #@ resource_types()
+
+#! resources
+resources: #@ resources()
+
+#! jobs
+jobs: #@ jobs()

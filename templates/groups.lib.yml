@@ -1,0 +1,83 @@
+#! ----------------------------------------------------
+#! groups for logically grouping product activities
+#! ----------------------------------------------------
+
+#@ load("functions.lib.yml", "products")
+
+groups: 
+
+#@ def groups_for_install_upgrade_products():
+
+- name: ALL
+  jobs:
+  #@ for product in products():
+  #@ product_alias="{}".format(product).split("|")[0]
+  #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
+  - #@ "{}-{}".format(job, product_alias)
+  #@ end
+  #! end of for job in []
+  #@ end
+  #! end of for products():
+  - apply-product-changes
+  - export-installation
+
+
+#@ for product in products():
+#@ product_alias="{}".format(product).split("|")[0]
+- name: #@ product_alias
+  jobs:
+
+  #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
+  - #@ "{}-{}".format(job, product_alias)
+  #@ end
+  #! end of for job in []
+
+#@ end
+#! end of for products():
+
+- name: apply-changes
+  jobs:
+  - apply-product-changes
+  - export-installation
+
+#@ end
+#! end of def groups_for_install_upgrade_products():
+
+
+
+#@ def groups_for_patch_products():
+
+- name: ALL
+  jobs:
+  #@ for product in products():
+  #@ product_alias="{}".format(product).split("|")[0]
+  #@ for job in ["download-upload-stage-product", "configure-product"]:
+  - #@ "{}-{}".format(job, product_alias)
+  #@ end
+  #! end of for job in []
+  - apply-product-changes
+  - export-installation
+  #@ end
+  #! end of for product in products():
+  - apply-product-changes
+  - export-installation
+
+#@ for product in products():
+#@ product_alias="{}".format(product).split("|")[0]
+- name: #@ product_alias
+  jobs:
+  #@ for job in ["download-upload-stage-product", "configure-product"]:
+  - #@ "{}-{}".format(job, product_alias)
+  #@ end
+  #! end of for job in []
+
+#@ end
+#! end of for product in products():
+
+- name: apply-changes
+  jobs:
+  - apply-product-changes
+  - export-installation
+
+#@ end
+#! end of def groups_for_patch_products():

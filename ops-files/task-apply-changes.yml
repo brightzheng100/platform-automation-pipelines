@@ -10,6 +10,6 @@
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
-      PRODUCT_NAMES: ((product.product_name))
-      ERRAND_CONFIG_FILE: ((foundation))/errands/((product.product_name)).yml
+      #PRODUCT_NAMES: ((product_names))
+      ERRAND_CONFIG_FILE: ((foundation))/errands/errands.yml
 
