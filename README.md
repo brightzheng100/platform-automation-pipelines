@@ -355,7 +355,7 @@ For example, below scenarios are now considered as `upgrade`:
 
 For `patch`, it's literally about the patch version, like `2.4.1` -> `2.4.10`, so we enable the version detection pattern as `*.*.p`
 
-Please note that from first version check, where the version might be `null` and then converted as `0.0.0`, to the desired version say `2.4.1`, the `Semver Config` is smart enough and won't consider it as a new version if we're on `*.*.p`.
+Please note that from first version check, where the version might be `null` and then converted as `0.0.0`, we have to build the version baseline so it will still trigger once even it's on `*.*.p`.
 
 
 ## Available Ops Files
