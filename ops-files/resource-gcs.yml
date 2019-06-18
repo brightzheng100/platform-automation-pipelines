@@ -14,7 +14,7 @@
     source:
       json_key: ((gcp_json_key))
       bucket: ((gcs.buckets.automation))
-      regexp: .*tasks-(.*)-arg.zip
+      regexp: .*tasks-(.*).zip
 
 - op: replace
   path: /resources/name=platform-automation-image

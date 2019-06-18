@@ -1,0 +1,15 @@
+# Enable selective apply changes, with custom task of `apply-changes.yml`
+- op: replace  
+  path: /jobs/name=apply-product-changes/plan/task=apply-product-changes
+  value:
+    task: apply-product-changes
+    image: platform-automation-image
+    file: platform-automation-tasks/custom-tasks/apply-changes.yml
+    input_mapping:
+      config: configuration
+      env: interpolated-files
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+      #PRODUCT_NAMES: ((product_names))
+      ERRAND_CONFIG_FILE: ((foundation))/errands/errands.yml
+

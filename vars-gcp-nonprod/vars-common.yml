@@ -1,0 +1,76 @@
+---
+
+foundation: gcp-nonprod                                    # current foundation code
+
+# Added to replace the S3 reference
+gcs:
+  buckets:
+    automation: platform-automation-core
+    installation: platform-automation-install
+
+# To use Google Cloud Storage(GCS) instead, append the ops-file called resource-gcs.yml to the main scripts like so (example)
+# ./4-fly-patch-products.sh gcp-control-plane gcp-nonprod test-resource-file-patch ops-files/resource-gcs.yml
+
+s3:
+  endpoint: https://your-s3-url                       # the S3 endpoint
+  access_key_id: ((s3_access_key_id))                 # credhub: ((s3_access_key_id))
+  secret_access_key: ((s3_secret_access_key))         # credhub: ((s3_secret_access_key))
+  region_name: ""                                     # optional, regin name
+  buckets:
+    platform_automation: platform-automation          # map bucket for platform-automation artifacts (e.g. image)
+    foundation: dev                                   # map bucket for current foundation for hosting exported installation-*.zip files
+
+credhub:
+  server: https://concourse.gcp-control-plane.arg-pivotal.com:8844
+  ca_cert: |
+    -----BEGIN CERTIFICATE-----
+    MIIDATCCAemgAwIBAgIUMrgfVQIb7rZnbi/its6C3tnqu3cwDQYJKoZIhvcNAQEL
+    BQAwEDEOMAwGA1UEAxMFYXRjQ0EwHhcNMTkwNTIxMTk0MDI1WhcNMjAwNTIwMTk0
+    MDI1WjAQMQ4wDAYDVQQDEwVhdGNDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC
+    AQoCggEBAMcLTGjRDT9k2xpPspMNNDRQzvAWNoNhTvap7q66DjruE3HhgZpCS7iL
+    MsJqQwMLjSS+GRrzmXVuaZQ0ToJ6KnmnoP755yI+X08KJhI8fUcQBlxL9EQgsuZm
+    AYG5+ZdKFRaM32slv620eV0UKBNBAgyrrfRP6ATohSrneRixF0T2hOA+ReMovbEO
+    OFzkEOl2XMzeaI0wuRVnPpyNeoMzVkIAVcaB/R99rjGX6rnOI+PRQHSAuWL1ioiG
+    OlgTexvGGyHy+q+rTM1WwV27BvpQVJix8UB5e6gdeE40XwE6yWEypV2KMDsM53LB
+    0kVlD9h5rl08H9sjZpv9WfDf2Lpv31cCAwEAAaNTMFEwHQYDVR0OBBYEFA/Pugag
+    c+A6zjjhkts0xJeFvVi5MB8GA1UdIwQYMBaAFA/Pugagc+A6zjjhkts0xJeFvVi5
+    MA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAJNZGmxJ3MPJbYSw
+    GVpMD7WoG+FHI+pH9UuOqOvbfHiLjnmA/Tbd8ax8C9mWtGnsDZfgcJY+kJdHKRyp
+    EXJQernHxDj4l6sPl2VnlRtrF1oJ/lY2E3jRamiHzmDId4vGLhIiH4JSn5jRZtvx
+    bF2IoAAHHI+M4U9Y765g+kUKRAnLNKFlTLzLqsdAWiVCdoqBAVsCQkrJUJOzjzyo
+    EciROKCFgtzB4sgkam4n6kxgRNxmE0rTfw1wmIQhaQzwaCg+4MHaqDSJKk8Ykkzv
+    ssts2sJI0jOv9ebJz9FrH4c8Q5zQezOS1+QprfgoTCCNzVZsUP1UOBwZ83zWvGsQ
+    g4VE8I0=
+    -----END CERTIFICATE-----
+  client: concourse_to_credhub
+  secret: OWuf3zce6SV2YK04S3yjwTj4muGhcO
+  interpolate_folders: 'gcp-nonprod/config gcp-nonprod/env gcp-nonprod/vars'
+git:
+  configuration:                                      # The configuration repo
+    uri: "git@github.com:agregory999/platform-automation-arg.git"
+    products_file: products.yml                       # The products yaml file that used to track for version changes
+  user:                                               # The user for access to configuration repo
+    email: robot@company.com                          # a dummy email will work if we're using private_key for authentication
+    username: ((git_user.username))                   # a dummy username will work if we're using private_key for authentication
+    #password: ((git_user.password))                  # optional if we're using private_key for authentication
+  private_key: ((git_private_key.private_key))        # The private for access to configuration repo
+
+schedule:
+  patch:                                              # Patch scheduler, the whole chunk will be used as ((schedule.patch))
+    start: 12:00 AM                                   # by following Time Resource https://github.com/concourse/time-resource
+    stop: 1:00 AM
+    location: Asia/Singapore
+
+gcp_json_key: |
+  {
+  "type": "service_account",
+  "project_id": "fe-agregory",
+  "private_key_id": "e52165f80ceff129755f88afdd76e9d910cb3d2a",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8clk6cFTc1ei/\nC+v6+mlrqHjb4tywfuOaN1lFd5PjNxg4FNYVRpLtfgQ2xd9HUoILrNadM9aAfJOZ\nXKVuq8dtinMBEDr3bIImOCXe5B1xd193X7KAzA6mrmyD4cpg6IMKCH10Q6rYG0w8\nknd14W/wmU7XMDg6/LTMCxKMu2ZnsjYJ0yZBu0hcyJM/pzYpvi4QVoPvW23GlLFd\ndRcnNkQ2BsfmKEllkPx2lHmy2CABXSVrgiIXy7JGB7nZrl2xruZu0n6fbjaeGBy6\n7AL0h//D6g3m1VRtauUDjCTmBbyxXkr7qyvQhm8Y8PuMF4kWv8rFNNP2VxhklZtY\nPiGVApf9AgMBAAECggEAWf2fV7VqCTWLmqQ2Ulm/+x3ubU8WhaBqz2vsESzr7h8S\nzUFCBNH5ezlpCMEQga5IlQu6R0MIhb43/A5OoB2fNFPf3JukFSD3vAmnKBw2ZUeU\nytxj0Xbg7j8wagBq1UFjxmhMhLeFwAK1Mt3c92mrO7HygPexepXQPvpwps0dN5oE\njmhJasdDGfUtl9jcMXddFS1VP8OXctc+DIbHaRm0oJ0EL373QpyiAJGByqdyb5/a\nJUSZAejy7gRB/s5owrbEnLuzJz0kVT0+Fl2YwT5KrZcWMT9bmL6Ea9szxThmczhb\ncdF+pp3el8HRNTFTl+ryUYq/c4MRRQb5s8/wbgkCjwKBgQDl39vIUDDD3dLI0KRn\n4HsyXxxuGInHuSz2fZSHB5KuT8jy7ABZDT5JcynImK5uR+lADZ/2wH2H6hynL0Ys\nDzFk54P3vo+OaAtbdLaE2N5RCDr0FF7ChbKIk/Qy5V5GvClji3XGyk/w8XMY/Mvw\nA/ZfRMDaxb9VmvPo8xt/ZkG2hwKBgQDR3SiyZUe0qTsvFQZpq+84qQohtQ/lOL2I\nfzFqwUmu6zrkl6UlOAJvC6ZR3w68o8tU//1ETkmU/Mwug2sruUqSVHRMU+NTwWBQ\nN0NNor1zIsjS+VEi4BufN5GiMEJkvQI7ljyyBBgYRw3pX5tLtvngE6HTUsF2pA0u\nmGBtEjsaWwKBgQDYKdZHXAE/bo0Ugf7YH+Q5ze6yKSkHQz7g296by6dHe4d/yCXb\nl/SGpWEZXVpKIh1ZOna+Vuy0rpYbMP1P2UmdlYgnpG7ifzyO2AX6juUgVhj6BV3G\nlmr4vAjbA43P/oj9LtumAAGElciiKrasEU3Q8JpaH7J5Ealj2Zh2CPaqaQKBgBT9\nlON7A9gLETNdW/3Xx56YMb47WPKpYTO03SF7Yb5QItzYWhlF5+BpfuIzeErf6yd+\nTzu0xOFVA6snU+HUr6PBNLypq1QmRFbhoCa0v1Qzx3hqnXXqini7WyKoxwtCaGXD\nWiDIDgznlnmgKW1CSO3jqMz1Owp90B+39/UQ3L5/AoGASjOnt2D0Wv817ODU/GEn\nSgnxxd2JOZ+hrO2LLQsQd2jp/srSOnCHhZEhH6/3Xt3vptNENpoE8psb0rMC50L5\np9rzaYJxqKD9byzRNhdrF1Bz1RQ4rOjsSdEvUVh1uSSiWWQIQJWyvxn7iFAHc3TM\nSv8R+cBEf2vIh5RrD3NCPfA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "gcp-nonprod-opsman@fe-agregory.iam.gserviceaccount.com",
+  "client_id": "110883256268213771339",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gcp-nonprod-opsman%40fe-agregory.iam.gserviceaccount.com"
+  }
