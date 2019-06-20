@@ -81,7 +81,7 @@ credhub-interpolate: &credhub-interpolate
     CREDHUB_CLIENT: ((credhub.client))
     CREDHUB_SECRET: ((credhub.secret))
     PREFIX: /concourse/((foundation))
-    INTERPOLATION_PATH: ((credhub.interpolate_folders))
+    INTERPOLATION_PATHS: ((credhub.interpolate_folders))
 
 jobs:
 # 1. export-installation-before
