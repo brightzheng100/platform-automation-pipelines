@@ -17,6 +17,11 @@ fi
 
 config_file="cat"
 if [[ ${#ops_files[@]} > 0 ]]; then
+    if ! [ -x "$(command -v yaml-patch)" ]; then
+        echo "yaml-patch tool is required for ops-files. Please get it from https://github.com/krishicks/yaml-patch/releases"
+        exit 1
+    fi
+
     config_file=" yaml-patch "
     for ops_file in "${ops_files[@]}"; do
         config_file+=" -o ${ops_file} "

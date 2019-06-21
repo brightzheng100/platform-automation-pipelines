@@ -16,12 +16,17 @@ $0 dev dev install-upgrade-products ops-files/a.yml ops-files/b.yml
 fi
 
 if ! [ -x "$(command -v ytt)" ]; then
-    echo "ytt is required. Please get it from https://github.com/k14s/ytt/releases"
+    echo "ytt tool is required. Please get it from https://github.com/k14s/ytt/releases"
     exit 1
 fi
 
 config_file="cat"
 if [[ ${#ops_files[@]} > 0 ]]; then
+    if ! [ -x "$(command -v yaml-patch)" ]; then
+        echo "yaml-patch tool is required for ops-files. Please get it from https://github.com/krishicks/yaml-patch/releases"
+        exit 1
+    fi
+
     config_file=" yaml-patch "
     for ops_file in "${ops_files[@]}"; do
         config_file+=" -o ${ops_file} "
