@@ -74,46 +74,7 @@ Here is a typical setup, for your reference:
 
 ![typical-setup.png](screenshots/typical-setup.png)
 
-
-**[Concourse](https://concourse-ci.org/download.html) Server (Required)**
-
-It's of course required if we're working on Concourse pipelines.
-
-And this is exactly what this repo is built for: `platform-automation`-powered **Concourse pipelines**
-
-> Note: Using other CI/CD platform is totally possible too, but it's NOT the scope of this repo.
-
-
-**Git Service (Required)**
-
-Git service is required to host some stuff like products' config files.
-
-It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them.
-Please note that it may break the upgrade path of `platform-automation` so think twice before doing this.
-
-[Gogs](https://gogs.io/) might be a good candidate while on-prem, or simply use any public ones, like GitHub -- don't forget, private repos are possible now, for free:)
-
-
-**S3 Blobstore (Required in air-gapped environment)**
-
-S3 blobstore is required in air-gapped environment to host a lot of things like artifacts.
-And it's an ideal place to host the `platform-automation-image` if Docker Registry is not available.
-
-The pipelines also use S3 blobstore for exported installation settings -- the `installation-*.zip` files.
-
-
-**Private Docker Registry (Optional)**
-
-Private Docker Registry is optional.
-It makes sense only when you want to host the `platform-automation-image` or other custom Concourse resource types which are typically Dockerized.
-
-
-**Some Client-side Tools**
-
-Below tools are required in your laptop or the workspace:
-- Concourse [`fly cli`](https://concourse-ci.org/download.html)
-- [yaml-patch](https://github.com/krishicks/yaml-patch) for patching pipelines with ops files, if required
-- [ytt](https://get-ytt.io/), an amazing YAML templating tool for dynamically generating `install-upgrade-products` and `patch-products` pipelines as the desired products might vary.
+For detailed explaination of the preparation, please refer to detailed preparation [here](#detailed-preparation).
 
 
 ## S3 Bucket Practices
@@ -144,11 +105,9 @@ $ mc ls local/platform-automation/dev
 
 ## Configuration Repo Practices
 
-Before we `fly` Concourse pipelines, you must have a configuration Git repo to host things like `env.yml`, `auth.yml`, product config and vars files.
+You must have a configuration Git repo to host stuff like `env.yml`, `auth.yml`, product config and vars files.
 
-Please refer to [here](http://docs.pivotal.io/platform-automation/v3.0/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by versioning system like Git.
-
-Based on some real-world practices, below structure and naming pattern are my recommendation:
+Based on some real-world practices, below structure and naming conventions are my recommendation:
 
 ```
 ├── README.md
@@ -169,6 +128,28 @@ Based on some real-world practices, below structure and naming pattern are my re
 │    └── products.yml
 └── <ANOTHER FOUNDATION-CODE, e.g. prod>
 ```
+
+To make it clearer, you can get started with only below files: 
+- `<FOUNDATION-CODE>/config/auth.yml`
+- `<FOUNDATION-CODE>/config/global.yml`
+- `<FOUNDATION-CODE>/env/env.yml`
+- `<FOUNDATION-CODE>/state/state.yml`
+- `<FOUNDATION-CODE>/products/ops-manager.yml`
+- `<FOUNDATION-CODE>/products.yml`
+
+The actual product-related files, like `<FOUNDATION-CODE>/generated-config/*`, `<FOUNDATION-CODE>/products/*` (expect `ops-manager.yml`), `<FOUNDATION-CODE>/vars/*`, can be generated, templatized/parameterized while driving through the `install-opsman`, `install-upgrade-products` pipelines at first time.
+
+The typical process would look like:
+1. The `generate-director-config` or `generate-product-config` job will generate the raw product config files, as `<PRODUCT-SLUG>.yml`, under `<FOUNDATION-CODE>/generated-config/`;
+2. Copy it to `<FOUNDATION-CODE>/products/`, as `<PRODUCT-SLUG>.yml`;
+3. Copy it to `<FOUNDATION-CODE>/vars/`, as `<PRODUCT-SLUG>-vars.yml`, by following the naming conventions;
+4. Templatize and parameterized both files for one particular product;
+5. Report 1-4 for all other products, one by one;
+6. Run through the pipeline
+
+Once above process is done, we have succussfully established a great baseline for rest of upgrades and patchs.
+
+Please refer to [here](http://docs.pivotal.io/platform-automation/v3.0/reference/inputs-outputs.html) for required input/output files which should be versioned and managed by versioning system like Git.
 
 For your convenience, there is already a sample Git repo for you to check out, [here](https://github.com/brightzheng100/platform-automation-configuration).
 
@@ -406,3 +387,48 @@ $ ./3-fly-install-upgrade-products.sh dev dev install-upgrade-products \
     ops-files/task-apply-changes.yml
 ```
 5. The bonus is, you can control the errands as well by compiling an errand control config file `errands.yml` in `/errands` folder in your `platform-automation-configuration` repo, like the samples [here](https://github.com/brightzheng100/platform-automation-configuration/tree/master/dev/errands).
+
+
+## Annex
+
+### Detailed Preparation
+
+**[Concourse](https://concourse-ci.org/download.html) Server (Required)**
+
+It's of course required if we're working on Concourse pipelines.
+
+And this is exactly what this repo is built for: `platform-automation`-powered **Concourse pipelines**
+
+> Note: Using other CI/CD platform is totally possible too, but it's NOT the scope of this repo.
+
+
+**Git Service (Required)**
+
+Git service is required to host some stuff like products' config files.
+
+It's also possible to host the `platform-automation` tasks if you really want to further _customize_ them.
+Please note that it may break the upgrade path of `platform-automation` so think twice before doing this.
+
+[Gogs](https://gogs.io/) might be a good candidate while on-prem, or simply use any public ones, like GitHub -- don't forget, private repos are possible now, for free:)
+
+
+**S3 Blobstore (Required in air-gapped environment)**
+
+S3 blobstore is required in air-gapped environment to host a lot of things like artifacts.
+And it's an ideal place to host the `platform-automation-image` if Docker Registry is not available.
+
+The pipelines also use S3 blobstore for exported installation settings -- the `installation-*.zip` files.
+
+
+**Private Docker Registry (Optional)**
+
+Private Docker Registry is optional.
+It makes sense only when you want to host the `platform-automation-image` or other custom Concourse resource types which are typically Dockerized.
+
+
+**Some Client-side Tools**
+
+Below tools are required in your laptop or the workspace:
+- Concourse [`fly cli`](https://concourse-ci.org/download.html)
+- [yaml-patch](https://github.com/krishicks/yaml-patch) for patching pipelines with ops files, if required
+- [ytt](https://get-ytt.io/), an amazing YAML templating tool for dynamically generating `install-upgrade-products` and `patch-products` pipelines as the desired products might vary.
