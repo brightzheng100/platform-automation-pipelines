@@ -11,7 +11,7 @@ groups:
 - name: ALL
   jobs:
   #@ for product in products():
-  #@ product_alias="{}".format(product).split("|")[0]
+  #@ product_alias=product.split("|")[0]
   #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
   - #@ "{}-{}".format(job, product_alias)
   #@ end
@@ -23,7 +23,7 @@ groups:
 
 
 #@ for product in products():
-#@ product_alias="{}".format(product).split("|")[0]
+#@ product_alias=product.split("|")[0]
 - name: #@ product_alias
   jobs:
 
@@ -50,7 +50,7 @@ groups:
 - name: ALL
   jobs:
   #@ for product in products():
-  #@ product_alias="{}".format(product).split("|")[0]
+  #@ product_alias=product.split("|")[0]
   #@ for job in ["download-upload-stage-product", "configure-product"]:
   - #@ "{}-{}".format(job, product_alias)
   #@ end
@@ -63,7 +63,7 @@ groups:
   - export-installation
 
 #@ for product in products():
-#@ product_alias="{}".format(product).split("|")[0]
+#@ product_alias=product.split("|")[0]
 - name: #@ product_alias
   jobs:
   #@ for job in ["download-upload-stage-product", "configure-product"]:

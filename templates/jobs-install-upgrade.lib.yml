@@ -52,7 +52,7 @@ jobs:
 
 #@ for product in products():
 
-#@ alias_slug_name="{}".format(product).split("|")
+#@ alias_slug_name=product.split("|")
 #@ product_alias=alias_slug_name[0]
 #@ product_slug=alias_slug_name[1]
 #@ product_name=product_slug
@@ -133,7 +133,7 @@ jobs:
     input_mapping:
       env: interpolated-files
     params:
-      PRODUCT_NAME: #@ "{}".format(product_name)
+      PRODUCT_NAME: #@ product_name
       ENV_FILE: ((foundation))/env/env.yml
     on_success: #@ make_config_commit(product_slug, product_name)
 
@@ -174,7 +174,7 @@ jobs:
   plan:
   - aggregate:
       #@ for product in products():
-      #@ product_alias="{}".format(product).split("|")[0]
+      #@ product_alias=product.split("|")[0]
     - get: #@ "product-config-{}".format(product_alias)
       passed:
       - #@ "configure-product-{}".format(product_alias)
@@ -199,7 +199,7 @@ jobs:
   plan:
   - aggregate:
       #@ for product in products():
-      #@ product_alias="{}".format(product).split("|")[0]
+      #@ product_alias=product.split("|")[0]
     - get: #@ "product-config-{}".format(product_alias)
       passed:
       - apply-product-changes

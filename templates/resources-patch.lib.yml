@@ -52,8 +52,8 @@ resources:
 
 #@ for product in products():
 
-#@ product_alias="{}".format(product).split("|")[0]
-#@ product_slug="{}".format(product).split("|")[1]
+#@ product_alias=product.split("|")[0]
+#@ product_slug=product.split("|")[1]
 
 - name: #@ "product-config-{}".format(product_alias)
   type: semver-config
