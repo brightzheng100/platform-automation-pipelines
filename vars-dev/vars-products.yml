@@ -18,7 +18,7 @@
 #!
 #! Notes:
 #! 1. For some historical reason, some products have different values about `PRODUCT_SLUG` and `PRODUCT_NAME`.
-#!    For example, Pivotal Application Service (PAS)' PRODUCT_SLUG is "elastic-runtime" whereras "PRODUCT_NAME" is "cf",
+#!    For example, Pivotal Application Service (PAS)' PRODUCT_SLUG is "elastic-runtime" whereas "PRODUCT_NAME" is "cf",
 #!    so we must define it like:
 #!
 #!    - pas|elastic-runtime|cf

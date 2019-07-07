@@ -1,0 +1,36 @@
+#@data/values
+
+---
+
+#! Here is just to highlight what you want to construct pipelines
+#! For the detailed configuration of products, a `products.yml` should be checked in
+#! to platform automation configuration repo, like `platform-automation-configuration/<ENV>/products.yml
+#! Check this out for your reference: https://github.com/brightzheng100/platform-automation-configuration/tree/master/dev/products.xml
+
+#! For the products, the format MUST follow a pattern:
+#!
+#! - <PRODUCT_ALIAS>|<PRODUCT_SLUG>[|<PRODUCT_NAME>]
+#!
+#! Where:
+#! - <PRODUCT_ALIAS>: is the product alias which can be whatever you want to alias a product
+#! - <PRODUCT_SLUG>: is the official slug which can be retrieved from command line `$ pivnet products`, as attched below
+#! - <PRODUCT_NAME>: is required ONLY when <PRODUCT_NAME> is different compared to "<PRODUCT_SLUG>", see Notes 1
+#!
+#! Notes:
+#! 1. For some historical reason, some products have different values about `PRODUCT_SLUG` and `PRODUCT_NAME`.
+#!    For example, Pivotal Application Service (PAS)' PRODUCT_SLUG is "elastic-runtime" whereas "PRODUCT_NAME" is "cf",
+#!    so we must define it like:
+#!
+#!    - pas|elastic-runtime|cf
+#!
+
+products:
+
+#! PKS
+- pks|pivotal-container-service
+
+#! Harbor
+- harbor|harbor-container-registry
+
+#! Reliability View
+#!- reliability-view|reliability_view_pcf|p-reliability-view
