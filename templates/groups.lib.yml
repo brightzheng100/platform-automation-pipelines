@@ -86,11 +86,15 @@ groups:
       #@ product_alias=product.split("|")[0]
       #@ for job in ["download-product"]:
       -  #@ "{}-{}".format(job, product_alias)
+      #@ end
+      #! end of for job in []
+      #@ end
+      #! end of for product in products():
 
-    #@ end
-    #! end of for job in []
-    #@ end
-    #! end of for product in products():
+  - name: opsman
+    jobs:
+      - download-product-opsman
+
   #@ for product in products():
   #@ product_alias=product.split("|")[0]
   - name: #@ product_alias

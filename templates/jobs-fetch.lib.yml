@@ -49,7 +49,7 @@ jobs:
           VARS_FILES: vars/((foundation))/config/global.yml
       - put: opsman-product
         params:
-          file: downloaded-product/((s3.opsman.regex))
+          file: downloaded-product/*.ova
 
   #@ for product in products():
 
