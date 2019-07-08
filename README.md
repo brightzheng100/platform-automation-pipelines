@@ -432,3 +432,26 @@ Below tools are required in your laptop or the workspace:
 - Concourse [`fly cli`](https://concourse-ci.org/download.html)
 - [yaml-patch](https://github.com/krishicks/yaml-patch) for patching pipelines with ops files, if required
 - [ytt](https://get-ytt.io/), an amazing YAML templating tool for dynamically generating `install-upgrade-products` and `patch-products` pipelines as the desired products might vary.
+
+### Secure Secret Storage
+
+As an alternative to using Concourse variables for your secrets, you can leverage [Credential Management](https://concourse-ci.org/creds.html) integrated into Concourse.  This section provides some further examples and details.
+
+#### CredHub Secrets 
+
+If you are using a Concourse with the [Credhub credential manager](https://concourse-ci.org/credhub-credential-manager.html) you must first import those variables into credhub.  Check out `credhub-secrets.example.yml` for a sample of how you can add those values easily with a `credhub import -f credhub-secrets.yml` command.
+
+_Why are you adding credhub credentials into secret storage when credhub is already linked to Concourse?_
+
+This is to avoid _secrets as configuration_ to follow a better _configuration as configuration_ model, we leverage the credhub interpolate step to allow the flexibility of still templatizing our configuration rather than storing everything in credhub.  This further splits configuration concerns from secrets.  Even if your Concourse is already linked to credhub, we use the more flexible `credhub interpolate` to allow storing secure variables directly in configuration files.
+
+#### Kubernetes Secrets
+
+If you are using Concourse, you can store secrets ahead of time like so:
+
+```
+# Assuming your team name is main and Concourse is set to look in namespaces prefaced by concourse-
+kubectl create secret generic -n concourse-main s3 --from-literal=access_key_id=$MINIO_ACCESS_KEY --from-literal=secret_access_key=$MINIO_SECRET_KEY --dry-run -o yaml | kubectl replace -f -
+kubectl create secret generic -n concourse-main credhub --from-literal=ca_cert=$CREDHUB_CA_CERT --from-literal=client=$CREDHUB_CLIENT --from-literal=server=$CREDHUB_SERVER --from-literal=secret=$CREDHUB_SECRET --dry-run -o yaml | kubectl replace -f -
+kubectl create secret generic -n concourse-main git --from-file=private_key=/home/voor/.ssh/keys/deploykey.pem --dry-run -o yaml | kubectl replace -f -
+```
