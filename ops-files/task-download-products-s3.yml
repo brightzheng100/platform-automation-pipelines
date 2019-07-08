@@ -1,0 +1,4 @@
+- op: replace  
+  path: /jobs/file=platform-automation-tasks/tasks/download-product.yml
+  value:
+    file: platform-automation-tasks/tasks/download-product-s3.yml

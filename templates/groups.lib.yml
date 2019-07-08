@@ -4,80 +4,104 @@
 
 #@ load("functions.lib.yml", "products")
 
-groups: 
+groups:
+  #@ def groups_for_install_upgrade_products():
 
-#@ def groups_for_install_upgrade_products():
+  - name: ALL
+    jobs:
+      #@ for product in products():
+      #@ product_alias=product.split("|")[0]
+      #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+      #@ end
+      #! end of for job in []
+      #@ end
+      #! end of for products():
+      - apply-product-changes
+      - export-installation
 
-- name: ALL
-  jobs:
   #@ for product in products():
   #@ product_alias=product.split("|")[0]
-  #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
-  - #@ "{}-{}".format(job, product_alias)
-  #@ end
-  #! end of for job in []
+  - name: #@ product_alias
+    jobs:
+      #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+
+    #@ end
+    #! end of for job in []
   #@ end
   #! end of for products():
-  - apply-product-changes
-  - export-installation
 
+  - name: apply-changes
+    jobs:
+      - apply-product-changes
+      - export-installation
 
-#@ for product in products():
-#@ product_alias=product.split("|")[0]
-- name: #@ product_alias
-  jobs:
-
-  #@ for job in ["download-upload-stage-product", "generate-product-config", "configure-product"]:
-  - #@ "{}-{}".format(job, product_alias)
   #@ end
-  #! end of for job in []
+  #! end of def groups_for_install_upgrade_products():
 
-#@ end
-#! end of for products():
+  #@ def groups_for_patch_products():
 
-- name: apply-changes
-  jobs:
-  - apply-product-changes
-  - export-installation
+  - name: ALL
+    jobs:
+      #@ for product in products():
+      #@ product_alias=product.split("|")[0]
+      #@ for job in ["download-upload-stage-product", "configure-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+      #@ end
+      #! end of for job in []
+      - apply-product-changes
+      - export-installation
+      #@ end
+      #! end of for product in products():
+      - apply-product-changes
+      - export-installation
 
-#@ end
-#! end of def groups_for_install_upgrade_products():
-
-
-
-#@ def groups_for_patch_products():
-
-- name: ALL
-  jobs:
   #@ for product in products():
   #@ product_alias=product.split("|")[0]
-  #@ for job in ["download-upload-stage-product", "configure-product"]:
-  - #@ "{}-{}".format(job, product_alias)
-  #@ end
-  #! end of for job in []
-  - apply-product-changes
-  - export-installation
+  - name: #@ product_alias
+    jobs:
+      #@ for job in ["download-upload-stage-product", "configure-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+
+    #@ end
+    #! end of for job in []
   #@ end
   #! end of for product in products():
-  - apply-product-changes
-  - export-installation
 
-#@ for product in products():
-#@ product_alias=product.split("|")[0]
-- name: #@ product_alias
-  jobs:
-  #@ for job in ["download-upload-stage-product", "configure-product"]:
-  - #@ "{}-{}".format(job, product_alias)
+  - name: apply-changes
+    jobs:
+      - apply-product-changes
+      - export-installation
+
   #@ end
-  #! end of for job in []
+  #! end of def groups_for_patch_products():
+
+  #@ def groups_for_fetch_products():
+
+  - name: ALL
+    jobs:
+      #@ for product in products():
+      #@ product_alias=product.split("|")[0]
+      #@ for job in ["download-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+
+    #@ end
+    #! end of for job in []
+    #@ end
+    #! end of for product in products():
+  #@ for product in products():
+  #@ product_alias=product.split("|")[0]
+  - name: #@ product_alias
+    jobs:
+      #@ for job in ["download-product"]:
+      -  #@ "{}-{}".format(job, product_alias)
+    #@ end
+    #! end of for job in []
 
 #@ end
 #! end of for product in products():
 
-- name: apply-changes
-  jobs:
-  - apply-product-changes
-  - export-installation
-
 #@ end
-#! end of def groups_for_patch_products():
+#! end of def groups_for_fetch_products():
+

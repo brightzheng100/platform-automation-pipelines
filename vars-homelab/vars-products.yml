@@ -27,16 +27,16 @@
 products:
 
 #! PAS
-- pas|elastic-runtime|cf
+#! - pas|elastic-runtime|cf
 
 #! CSB
-- csb|credhub-service-broker
+#! - csb|credhub-service-broker
 
 #! Redis
-- redis|p-redis
+#! - redis|p-redis
 
 #! PKS
-#!- pks|pivotal-container-service
+- pks|pivotal-container-service
 
 #! Harbor
 #!- harbor|harbor-container-registry

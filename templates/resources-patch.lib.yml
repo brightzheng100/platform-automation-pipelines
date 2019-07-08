@@ -41,7 +41,7 @@ resources:
   source:
     private_key: ((git.private_key))
     uri: ((git.configuration.uri))
-    branch: master
+    branch: ((git.configuration.branch))
 
 - name: patch-products-schedule
   type: time
@@ -60,7 +60,7 @@ resources:
   source:
     driver: git
     uri: ((git.configuration.uri))
-    branch: master
+    branch: ((git.configuration.branch))
     private_key: ((git.private_key))
     config_file: ((foundation))/((git.configuration.products_file))
     config_path: #@ "products.{}".format(product_alias)

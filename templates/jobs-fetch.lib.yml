@@ -1,0 +1,74 @@
+#! jobs template
+
+#@ load("functions.lib.yml", "products")
+
+#@ def credhub_interpolate():
+
+task: credhub-interpolate
+image: platform-automation-image
+file: platform-automation-tasks/tasks/credhub-interpolate.yml
+input_mapping:
+  files: configuration
+params:
+  CREDHUB_SERVER: ((credhub.server))
+  CREDHUB_CA_CERT: ((credhub.ca_cert))
+  CREDHUB_CLIENT: ((credhub.client))
+  CREDHUB_SECRET: ((credhub.secret))
+  PREFIX: /concourse/((foundation))
+  INTERPOLATION_PATHS: ((credhub.interpolate_folders))
+
+#@ end
+#! end of def credhub_interpolate():
+
+jobs:
+  #@ def jobs():
+
+  #@ for product in products():
+
+  #@ alias_slug_name=product.split("|")
+  #@ product_alias=alias_slug_name[0]
+  #@ product_slug=alias_slug_name[1]
+  #@ product_name=product_slug
+  #@ if len(alias_slug_name)==3:
+  #@   product_name=alias_slug_name[2]
+  #@ end
+
+  #! 1. download-product
+  - name: #@ "download-product-{}".format(product_alias)
+    serial_groups:
+      - download-product
+    serial: true
+    plan:
+      - aggregate:
+          - get: #@ "product-config-{}".format(product_alias)
+            trigger: true
+          - get: platform-automation-image
+            params: { unpack: true }
+          - get: platform-automation-tasks
+            params: { unpack: true }
+          - get: configuration
+      -  #@ credhub_interpolate()
+      - task: download-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/download-product.yml
+        input_mapping:
+          config: #@ "product-config-{}".format(product_alias)
+          vars: interpolated-files
+        output_mapping:
+          downloaded-stemcell: #@ "{}-stemcell".format(product_alias)
+        params:
+          CONFIG_FILE: semver-config.yaml
+          VARS_FILES: vars/((foundation))/config/global.yml
+      - in_parallel:
+          - put: #@ "{}-product".format(product_alias)
+            params:
+              file: downloaded-product/*.pivotal
+          - put: #@ "{}-stemcell".format(product_alias)
+            params:
+              file: #@ "{}-stemcell/*.tgz".format(product_alias)
+        
+#@ end
+#! end of for product in products():
+
+#@ end
+#! end of def jobs():

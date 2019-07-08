@@ -447,7 +447,7 @@ This is to avoid _secrets as configuration_ to follow a better _configuration as
 
 #### Kubernetes Secrets
 
-If you are using Concourse, you can store secrets ahead of time like so:
+If you are using Concourse on k8s, you can store secrets ahead of time like so:
 
 ```
 # Assuming your team name is main and Concourse is set to look in namespaces prefaced by concourse-
