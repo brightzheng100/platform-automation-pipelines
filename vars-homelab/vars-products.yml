@@ -38,6 +38,9 @@ products:
 #! PKS
 - pks|pivotal-container-service
 
+#! Compliance Scanner
+- compliance|p-compliance-scanner
+
 #! Harbor
 #!- harbor|harbor-container-registry
 

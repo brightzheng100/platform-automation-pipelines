@@ -81,6 +81,7 @@ groups:
 
   - name: ALL
     jobs:
+      - download-product-opsman
       #@ for product in products():
       #@ product_alias=product.split("|")[0]
       #@ for job in ["download-product"]:

@@ -32,6 +32,28 @@ resources:
       uri: ((git.configuration.uri))
       branch: ((git.configuration.branch))
 
+  - name: opsman-product
+    type: s3
+    source:
+      endpoint: ((s3.endpoint))
+      region_name: ((s3.region_name))
+      access_key_id: ((s3.access_key_id))
+      secret_access_key: ((s3.secret_access_key))
+      bucket: ((s3.buckets.products))
+      regexp: ((s3.opsman.regex))
+
+  - name: product-config-opsman
+    type: semver-config
+    source:
+      driver: git
+      uri: ((git.configuration.uri))
+      branch: ((git.configuration.branch))
+      private_key: ((git.private_key))
+      config_file: ((foundation))/products.yml
+      config_path: products.opsman
+      version_path: products.opsman.product-version
+      version_pattern: "m.n.p"
+
   #! product related resourses
 
   #@ for product in products():

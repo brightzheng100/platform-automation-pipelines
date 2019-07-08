@@ -13,6 +13,8 @@ s3:
     platform_automation: pivdevops-pivnet-products          # map bucket for platform-automation artifacts (e.g. image)
     foundation: pivdevops-installation                                   # map bucket for current foundation for hosting exported installation-*.zip files
     products: pivnet-products
+  opsman:
+    regex: \[ops-manager,(.*)\].*.ova
 
 # Not stored in concourse as variables, they're going to be secrets in k8s.
 credhub:
@@ -26,7 +28,7 @@ git:
   configuration:                                      # The configuration repo
     uri: "git@gitlab.planetvoor.com:rcvanvo/platform-automation-configuration.git"
     products_file: products.yml                       # The products yaml file that used to track for version changes
-    branch: alt
+    branch: master
   user:                                               # The user for access to configuration repo
     email: robot@company.com                          # a dummy email will work if we're using private_key for authentication
     username: rcvanvo@gmail.com                   # a dummy username will work if we're using private_key for authentication

@@ -23,6 +23,34 @@ params:
 jobs:
   #@ def jobs():
 
+  #! 1. download-product
+  - name: download-product-opsman
+    serial_groups:
+      - download-product
+    serial: true
+    plan:
+      - aggregate:
+          - get: product-config-opsman
+            trigger: true
+          - get: platform-automation-image
+            params: { unpack: true }
+          - get: platform-automation-tasks
+            params: { unpack: true }
+          - get: configuration
+      -  #@ credhub_interpolate()
+      - task: download-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/download-product.yml
+        input_mapping:
+          config: product-config-opsman
+          vars: interpolated-files
+        params:
+          CONFIG_FILE: semver-config.yaml
+          VARS_FILES: vars/((foundation))/config/global.yml
+      - put: opsman-product
+        params:
+          file: downloaded-product/((s3.opsman.regex))
+
   #@ for product in products():
 
   #@ alias_slug_name=product.split("|")
@@ -66,7 +94,7 @@ jobs:
           - put: #@ "{}-stemcell".format(product_alias)
             params:
               file: #@ "{}-stemcell/*.tgz".format(product_alias)
-        
+
 #@ end
 #! end of for product in products():
 
