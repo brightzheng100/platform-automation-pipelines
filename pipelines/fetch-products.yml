@@ -1,0 +1,21 @@
+#! ----------------------------------------------------
+#! master pipeline file for `fetch-products`
+#! ----------------------------------------------------
+
+#@ load("groups.lib.yml", "groups_for_fetch_products")
+#@ load("resource-types.lib.yml", "resource_types")
+#@ load("resources-fetch.lib.yml", "resources")
+#@ load("jobs-fetch.lib.yml", "jobs")
+
+---
+#! groups
+groups: #@ groups_for_fetch_products()
+
+#! resource_types
+resource_types: #@ resource_types()
+
+#! resources
+resources: #@ resources()
+
+#! jobs
+jobs: #@ jobs()
