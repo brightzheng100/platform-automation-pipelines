@@ -77,7 +77,7 @@ jobs:
 - name: create-opsman-and-configure-auth
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: product-config-opsman
       trigger: true
     - get: platform-automation-image
@@ -143,7 +143,7 @@ jobs:
 - name: generate-director-config
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: product-config-opsman
       trigger: true
       passed: [create-opsman-and-configure-auth]
@@ -186,7 +186,7 @@ jobs:
 - name: configure-director
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: product-config-opsman
       passed: [create-opsman-and-configure-auth]
     - get: platform-automation-image
@@ -212,7 +212,7 @@ jobs:
 - name: apply-director-changes
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: product-config-opsman
       passed: [configure-director]
     - get: platform-automation-image
@@ -234,7 +234,7 @@ jobs:
 - name: export-installation
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: product-config-opsman
       passed: [apply-director-changes]
       trigger: true

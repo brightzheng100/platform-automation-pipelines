@@ -41,7 +41,7 @@ jobs:
   - download-upload-stage-product
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: #@ "product-config-{}".format(product_alias)
       trigger: true
     - get: platform-automation-image
@@ -90,7 +90,7 @@ jobs:
   - configure-product
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: #@ "product-config-{}".format(product_alias)
       passed:
       - #@ "download-upload-stage-product-{}".format(product_alias)
@@ -120,7 +120,7 @@ jobs:
 - name: apply-product-changes
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: patch-products-schedule
       trigger: true
     #@ for product in products():
@@ -147,7 +147,7 @@ jobs:
 - name: export-installation
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
       #@ for product in products():
       #@ product_alias=product.split("|")[0]
     - get: #@ "product-config-{}".format(product_alias)
