@@ -1,0 +1,3 @@
+- op: replace  
+  path: /jobs/name=create-opsman-and-configure-auth/plan/task=download-product/file
+  value: platform-automation-tasks/tasks/download-product-s3.yml
