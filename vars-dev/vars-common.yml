@@ -25,7 +25,7 @@ git:
   user:                                               # The user for access to configuration repo
     email: robot@company.com                          # a dummy email will work if we're using private_key for authentication
     username: ((git_user.username))                   # a dummy username will work if we're using private_key for authentication
-    #password: ((git_user.password))                  # optional if we're using private_key for authentication
+    password: #((git_user.password))                  # optional if we're using private_key for authentication
   private_key: ((git_private_key.private_key))        # The private for access to configuration repo
 
 schedule:

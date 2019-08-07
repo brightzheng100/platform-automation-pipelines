@@ -46,6 +46,8 @@ resources:
     uri: ((git.configuration.uri))
     branch: master
     private_key: ((git.private_key))
+    username: ((git.user.username))
+    password: ((git.user.password))
     config_file: ((foundation))/products.yml
     config_path: products.opsman
     version_path: products.opsman.product-version
@@ -55,6 +57,8 @@ resources:
   type: git
   source:
     private_key: ((git.private_key))
+    username: ((git.user.username))
+    password: ((git.user.password))
     uri: ((git.configuration.uri))
     branch: master
 
