@@ -31,6 +31,7 @@ The highlights:
 - [2019-04-17] Merged `install-product.yaml` and `upgrade-product.yaml` as one: `install-upgrade-product.yaml`
 - [2019-05-05] Added selective apply changes with optional errand control mechanism
 - [2019-05-31] Rebuilt the pipelines by introducing YAML templating, with full compatibility of GA'ed [Platform Automation for PCF v3.x](https://network.pivotal.io/products/platform-automation/)
+- [2019-07-10] Adds ability to have companion pipeline that just downloads products and stores them in a S3 compatible blobstore.
 
 
 ## Overview
@@ -263,6 +264,32 @@ Screenshot looks like this:
 > Note: 
 > 1. Don't be surprised if the `patch-products` would automatically run first time, after you `fly`, without any version patch -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform.
 > 2. There are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
+
+### 1 x Fetch Related Pipeline
+
+The is an optional pipeline that can be run on an internet facing installation that will do nothing but retrieve the specified versions of a product, the associated stemcells, and the necessary files for ops manager.
+
+The intention with this pipeline is to install it somewhere inside a DMZ, or otherwise less secured environment, and it will assist in retrieving the resources necessary for offline installations.  Alternatively, it will cache all of your downloads from pivnet, which can be helpful with reconstructing environments.
+
+If you wish to do a 100% offline install, there are a few modifications you need to make to the earlier pipelines to use `download-product-s3` instead of `download-product` to then retrieve the files from the S3 object store.
+
+1. For the install opsman pipeline use `ops-files/task-install-opsman-s3.yml` as a `OPS_FILES`
+2. For the upgrade opsman pipeline use `ops-files/task-upgrade-opsman-s3.yml` as a `OPS_FILES`
+3. Modify the `jobs-install-upgrade.lib.yml` so that it uses `download-product-s3` instead of `download-product`:
+  ```diff
+  -    file: platform-automation-tasks/tasks/download-product.yml
+  +    file: platform-automation-tasks/tasks/download-product-s3.yml
+  ```
+4. Make sure you have the following values in your `products.yml` for each product:
+  ```
+  s3-stemcell-path: /pks-stemcells
+  s3-bucket: ((s3-bucket))
+  s3-region-name: ((s3-region-name))
+  s3-endpoint: ((s3-endpoint))
+  s3-access-key-id: ((s3-access-key-id))
+  s3-secret-access-key: ((s3-secret-access-key))
+  s3-product-path: /products
+  ```
 
 #### The Configurability for Products
 
