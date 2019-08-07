@@ -6,11 +6,12 @@ A set of workable [**`platform-automation`**](http://docs.pivotal.io/platform-au
 The highlights:
 - It's an end-to-end PCF automation solution, built on top of `platform-automation`, with best practices embedded
 - Literally **FOUR(4)** pipelines only for **ONE(1)** foundation, with whatever products you desire
+- It’s designed for multi-foundation, so rolling out to more PCF foundations would just work too;
 - Compatible with GA'ed [Platform Automation for PCF v3.x](https://network.pivotal.io/products/platform-automation/)
 
 ![all-pipelines.png](screenshots/all-pipelines.png)
 
-**BIG UPDATE**: I've rebuilt all the pipelines by using YAML templating technology to make things much easier...which means some breaking changes are introduced (Sorry for that!). But the configuration repo is fully respected, with some minor changes / enhancements, [here](https://github.com/brightzheng100/platform-automation-configuration#evolving-practices).
+**Official Blog**: If you're keen to know the detailed process and thoughts about how I implemented this, check out the Pivotal official blog post [here](https://content.pivotal.io/practitioners/implementing-comprehensive-pcf-automation-pipelines).
 
 **Disclaimers:**
 > **This is NOT an official guide for building pipelines on top of `platform-automation` -- there is no such a thing yet as of writing. Instead, this is just a sharing of my (Bright Zheng) own experience while building Concourse pipelines to drive `platform-automation` for Dojos and services.**
