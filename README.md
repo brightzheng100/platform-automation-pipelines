@@ -31,6 +31,7 @@ The highlights:
 - [2019-04-17] Merged `install-product.yaml` and `upgrade-product.yaml` as one: `install-upgrade-product.yaml`
 - [2019-05-05] Added selective apply changes with optional errand control mechanism
 - [2019-05-31] Rebuilt the pipelines by introducing YAML templating, with full compatibility of GA'ed [Platform Automation for PCF v3.x](https://network.pivotal.io/products/platform-automation/)
+- [2019-08-08] Added GCS support for buckets, thanks to @agregory999
 
 
 ## Overview
@@ -347,6 +348,7 @@ Please note that from first version check, where the version might be `null` and
 | [resource-platform-automation-tasks-git.yml](ops-files/resource-platform-automation-tasks-git.yml)  | ALL  | To host `platform-automation` tasks in Git repo for necessary customization. Please note that it's NOT recommended as it may break the upgrade path for `platform-automation` |
 | [resource-trigger-daily.yml](ops-files/resource-trigger-daily.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))`, on daily basis |
 | [resource-trigger-onetime.yml](ops-files/resource-trigger-onetime.yml)  | ALL  | To enable trigger for one specific job, by setting varaible of `((job_name))` one time only |
+| [resource-gcs.yml](ops-files/resource-gcs.yml)  | ALL  | To switch from S3 to Google Cloud Storage for Platform Automation image and tasks as well as installation exports |
 | [task-configure-authentication-ldap.yml](ops-files/task-configure-authentication-ldap.yml)  | Install OpsMan Pipeline  | To configure OpsMan authentication with LDAP/AD |
 | [task-apply-changes.yml](ops-files/task-apply-changes.yml)  | ALL Product Pipelines  | To enable selective apply changes with errand control. **For experiment only**, use with caution! |
 

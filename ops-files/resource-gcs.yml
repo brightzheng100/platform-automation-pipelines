@@ -1,0 +1,37 @@
+- op: add
+  path: /resource_types/-
+  value:
+    name: gcs-resource
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
+
+- op: replace
+  path: /resources/name=platform-automation-tasks
+  value:
+    name: platform-automation-tasks
+    type: gcs-resource
+    source:
+      json_key: ((s3.gcs_json_key))
+      bucket: ((s3.buckets.platform_automation))
+      regexp: .*tasks-(.*).zip
+
+- op: replace
+  path: /resources/name=platform-automation-image
+  value:
+    name: platform-automation-image
+    type: gcs-resource
+    source:
+      json_key: ((s3.gcs_json_key))
+      bucket: ((s3.buckets.platform_automation))
+      regexp: .*image-(.*).tgz
+
+- op: replace
+  path: /resources/name=installation
+  value:
+    name: installation
+    type: gcs-resource
+    source:
+      json_key: ((s3.gcp_json_key))
+      bucket: ((s3.buckets.foundation))
+      regexp: installation-(.*).zip

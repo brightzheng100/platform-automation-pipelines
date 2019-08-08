@@ -3,10 +3,15 @@
 foundation: pez                                       # current foundation code
 
 s3:
-  endpoint: https://your-s3-url                       # the S3 endpoint
-  access_key_id: ((s3_access_key_id))                 # credhub: ((s3_access_key_id))
-  secret_access_key: ((s3_secret_access_key))         # credhub: ((s3_secret_access_key))
-  region_name: ""                                     # optional, regin name
+  # S3 or S3 compatible (e.g. Minio, ECS, HCP)
+  endpoint: https://your-s3-url                       # S3: the S3 endpoint
+  access_key_id: ((s3_access_key_id))                 # S3: credhub: ((s3_access_key_id))
+  secret_access_key: ((s3_secret_access_key))         # S3: credhub: ((s3_secret_access_key))
+  region_name: ""                                     # S3: optional, regin name
+
+  # GCS: if using GCS, set this and ignore above items; and enable the ops-files/resource-gcs.yml
+  #gcs_json_key: ((gcs_json_key))                     # GCS: GCS' JSON key with right access permission
+
   buckets:
     platform_automation: platform-automation          # map bucket for platform-automation artifacts (e.g. image)
     foundation: pez                                   # map bucket for current foundation for hosting exported installation-*.zip files
