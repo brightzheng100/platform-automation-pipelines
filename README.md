@@ -32,6 +32,7 @@ The highlights:
 - [2019-05-05] Added selective apply changes with optional errand control mechanism
 - [2019-05-31] Rebuilt the pipelines by introducing YAML templating, with full compatibility of GA'ed [Platform Automation for PCF v3.x](https://network.pivotal.io/products/platform-automation/)
 - [2019-08-08] Added GCS support for buckets, thanks to @agregory999
+- [2019-09-10] Used [`semver-config-concourse-resource`](https://github.com/brightzheng100/semver-config-concourse-resource) v1.0.0 by default 
 
 
 ## Overview

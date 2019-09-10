@@ -14,5 +14,6 @@ resource_types:
   type: docker-image
   source:
     repository: itstarting/semver-config-concourse-resource
+    tag: 1.0.0
 
 #@ end
