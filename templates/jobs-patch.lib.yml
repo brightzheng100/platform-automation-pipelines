@@ -1,25 +1,7 @@
 #! jobs template
 
 #@ load("functions.lib.yml", "products")
-
-#@ def credhub_interpolate():
-
-task: credhub-interpolate
-image: platform-automation-image
-file: platform-automation-tasks/tasks/credhub-interpolate.yml
-input_mapping:
-  files: configuration
-params:
-  CREDHUB_SERVER: ((credhub.server))
-  CREDHUB_CA_CERT: ((credhub.ca_cert))
-  CREDHUB_CLIENT: ((credhub.client))
-  CREDHUB_SECRET: ((credhub.secret))
-  PREFIX: /concourse/((foundation))
-  INTERPOLATION_PATHS: ((credhub.interpolate_folders))
-
-#@ end
-#! end of def credhub_interpolate():
-
+#@ load("jobs-common.lib.yml", "credhub_interpolate")
 
 jobs:
 

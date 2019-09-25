@@ -33,6 +33,10 @@ The highlights:
 - [2019-05-31] Rebuilt the pipelines by introducing YAML templating, with full compatibility of GA'ed [Platform Automation for PCF v3.x](https://network.pivotal.io/products/platform-automation/)
 - [2019-08-08] Added GCS support for buckets, thanks to @agregory999
 - [2019-09-10] Used [`semver-config-concourse-resource`](https://github.com/brightzheng100/semver-config-concourse-resource) v1.0.0 by default 
+- [2019-09-24] Released v1.1.0
+  - Brought in more control on stemcell versions to ensure the consistency across multiple foundations
+  - Bumped to [`semver-config-concourse-resource`](https://github.com/brightzheng100/semver-config-concourse-resource) v1.1.0
+  - Re-designed the interfaces of all helper scripts
 
 
 ## Overview
@@ -59,7 +63,7 @@ Literally there are just **FOUR (4) pipelines** for **ONE (1) foundation** in mo
 | patch-products   | Patch all desired products/tiles | All products/tiles, including PAS and PKS  | [patch-product.yml](pipelines/patch-products.yml)  |
 
 > Notes:
-> 1. To be clear, the `install-upgrade-products` and `patch-products` are not simply pipelines, they're templatized to help construct pipelines for configurable desired products
+> 1. To be clear, the `install-upgrade-products` and `patch-products` are not simply pipelines, they're templatized to help construct pipelines for configurable desired products in a dynamic way
 > 2. This repo follows the same compatibility in terms of Concourse, OpsManager, Pivnet Resource etc. as stated in `platform-automation`, check out the docs [here](http://docs.pivotal.io/platform-automation/)
 
 
@@ -89,15 +93,15 @@ To get started, we need some buckets pre-created:
 You may take a look at my setup, where I use Minio by the way, for your reference:
 
 ```
-$ mc ls local/
+$ mc ls s3/
 [2019-05-27 17:41:37 +08]     0B dev/
 [2019-03-17 15:39:43 +08]     0B pez/
 [2019-05-28 14:29:23 +08]     0B platform-automation/
 
-$ mc ls local/platform-automation/
+$ mc ls s3/platform-automation/
 [2019-05-28 14:29:20 +08] 412MiB platform-automation-image-3.0.1.tgz
 
-$ mc ls local/platform-automation/dev
+$ mc ls s3/platform-automation/dev
 [2019-05-27 12:17:23 +08] 6.7MiB installation-20190527.416.47+UTC.zip
 [2019-05-27 12:32:11 +08] 6.7MiB installation-20190527.431.43+UTC.zip
 [2019-05-27 17:41:37 +08] 353KiB installation-after-ops-manager-upgrade.zip
@@ -161,36 +165,34 @@ For your convenience, there is already a sample Git repo for you to check out, [
 
 I created a Bash file for each pipeline to `fly` with.
 
-Usage:
+For example:
 
 ```
 $ fly targets
 name  url                            team  expiry
 dev   https://concourse.xxx.com      dev   Thu, 30 May 2019 14:37:16 UTC
 
-$ ./1-fly-install-opsman.sh
-USAGE: ./1-fly-install-opsman.sh <CONCOURSE_TARGET> <PLATFORM_CODE> <PIPELINE_NAME> <OPS_FILES, optional>
+$ ./3-fly-install-upgrade-products.sh -h
+Usage: 3-fly-install-upgrade-products.sh -t <Concourse target name> -p <PCF platform code> -n <pipeline name> [OPTION]
 
-For example:
+  -t <Concourse target name>          the logged in fly's target name
+  -p <PCF platform code>              the PCF platform code the pipeline is created for, e.g. prod
+  -n <pipeline name>                  the pipeline name
 
-./1-fly-install-opsman.sh dev dev install-opsman
+  -s <true/false to specify stemcell> true/false to indicate whether to specify stemcell
+  -o <ops files seperated by comma>   the ops files, seperated by comma, e.g. file1.yml,file2.yml
+  -h                                  display this help and exit
 
-Or if we have some ops files:
-
-./1-fly-install-opsman.sh dev dev install-opsman ops-files/a.yml ops-files/b.yml
+Examples:
+  3-fly-install-upgrade-products.sh -t prod -p prod -n install-upgrade-products
+  3-fly-install-upgrade-products.sh -t prod -p prod -n install-upgrade-products -s true
+  3-fly-install-upgrade-products.sh -t prod -p prod -n install-upgrade-products -o ops-file1.yml
+  3-fly-install-upgrade-products.sh -t prod -p prod -n install-upgrade-products -o ops-file1.yml,ops-file1.yml
 ```
-
-Where:
-
-- `CONCOURSE_TARGET`: The Concourse target name
-- `PLATFORM_CODE`: The platform code, e.g. dev
-- `PIPELINE_NAME`: The pipeline name
-- `OPS_FILES`: Optional. A list of ops files to be used to customize the pipeline, delimited by space (" ")
-
 
 ### Vars Files
 
-Using vars files is a common practice to externalize some variables.
+Using vars files is a common practice to externalize some variables for pipelines.
 
 There are two vars files used in these pipelines:
 
@@ -199,20 +201,19 @@ There are two vars files used in these pipelines:
 
 For those, say `s3_secret_access_key`, `git_private_key`, we should store and manage them with integrated credential manager, like [CredHub](https://github.com/cloudfoundry-incubator/credhub), or [Vault](https://www.vaultproject.io/).
 
-> Note: this part might be the bigest change compared to previous version! Hope you like it.
-
-
 ### 2 x OpsMan Related Pipelines
 
 #### [The `install-opsman` Pipeline](pipelines/install-opsman.yml)
 
 This pipeline is dedicated for installation of OpsMan and OpsMan Director.
 
+Sample usage: 
+
 ```
-$ ./1-fly-install-opsman.sh dev dev install-opsman
+$ ./1-fly-install-opsman.sh -t dev -p dev -n install-opsman
 ```
 
-> Note: If you want to customize the pipeline, say to retrieve products and stemcells from S3 instead of default [Pivnet](https://network.pivotal.io), please refer to [here](#available-ops-files) for how.
+> Note: If you want to customize the pipeline, say to use GCP instead of Minio as the blobstore, please refer to [here](#available-ops-files) for the out-of-the-box ops files; or simply add yours!
 
 Screenshot looks like this:
 ![install-opsman.png](screenshots/install-opsman.png)
@@ -222,14 +223,16 @@ Screenshot looks like this:
 
 This pipeline is for OpsMan upgrade/patch which will of course upgrade/patch OpsMan Director as well.
 
+Sample usage: 
+
 ```
-$ ./2-fly-upgrade-opsman.sh dev dev upgrade-pipeline
+$ ./2-fly-upgrade-opsman.sh -t dev -p dev -n upgrade-opsman
 ```
 
 Screenshot looks like this:
 ![upgrade-opsman.png](screenshots/upgrade-opsman.png)
 
-> Note: don't be surprised if the `upgrade-opsman` would run first time, after you `fly`, without any version upgrade -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform. 
+> Note: don't be surprised if the `upgrade-opsman` would run first time, after you `fly`, without any version upgrade -- it's just to catch up with the desired version to have a **baseline** -- it wouldn't hurt the platform. 
 
 
 ### 2 x Products Related Pipelines
@@ -240,14 +243,25 @@ This is a templatized pipeline.
 
 By using amazing YAML templating tool [`ytt`](https://get-ytt.io), the products can be fully configurable as desired to **install** and **upgrade**.
 
+Sample usage: 
+
 ```
-$ ./3-fly-install-upgrade-products.sh dev dev install-upgrade-products
+$ ./3-fly-install-upgrade-products.sh -t dev -p dev -n install-upgrade-products
+```
+
+By default, the latest applicable Stemcell will be assigned to the product.
+But if you desire to have full version consistency, including Stemcell, across platforms, explicitly assigning stemcells to products might be a good idea:
+
+```
+$ ./3-fly-install-upgrade-products.sh -t dev -p dev -n install-upgrade-products -s true
 ```
 
 Screenshot looks like this:
 ![install-upgrade-products.gif](screenshots/install-upgrade-products.gif)
 
-> Note: there are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
+> Note: 
+> 1. There are always groups named `ALL` and `apply-changes`, but the products are fully configurable in a dymanic way;
+> 2. For Stemcell assignment details, refer to [here](#stemcell-assignment)
 
 #### [The `patch-products` Pipeline](pipelines/patch-products.yml)
 
@@ -256,17 +270,23 @@ This is also a templatized pipeline, which would respect all the setup of `insta
 We shouldn't expect breaking product config changes in patch versions so this pipeline can be fully automated if you want.
 
 ```
-$ ./4-fly-patch-products.sh dev dev patch-products
+$ ./4-fly-patch-products.sh -t dev -p dev -n patch-products
+```
+
+Similarly, you can control Stemcell assignment by doing this way:
+
+```
+$ ./4-fly-patch-products.sh -t dev -p dev -n patch-products -s true
 ```
 
 Screenshot looks like this:
 ![patch-products.gif](screenshots/patch-products.gif)
 
 > Note: 
-> 1. Don't be surprised if the `patch-products` would automatically run first time, after you `fly`, without any version patch -- it's just to catch up with the desired version to have a **baseline** and wouldn't hurt the platform.
-> 2. There are always groups named `ALL` and `apply-changes`, but the products are fully configurable.
+> 1. Don't be surprised if the `patch-products` would automatically run first time, after you `fly`, without any version patch -- it's just to catch up with the desired version to have a **baseline** -- it wouldn't hurt the platform.
+> 2. There are always groups named `ALL` and `apply-changes`, but the products are fully configurable in a dymanic way.
 
-#### The Configurability for Products
+### The Configurability for Products
 
 There are two major configurable portions:
 
@@ -281,7 +301,7 @@ Where:
 
 For example, below configures two products, Pivotal Container Service (PKS) and Harbor:
 
-```
+```yaml
 products:
 
 # PKS
@@ -291,7 +311,7 @@ products:
 - harbor|harbor-container-registry
 ```
 
-**[`<PLATFORM_CODE>/products.yml`](https://github.com/brightzheng100/platform-automation-configuration/blob/master/dev/products.yml))**
+**[`<PLATFORM_CODE>/products.yml`](https://github.com/brightzheng100/platform-automation-configuration/blob/master/dev/products.yml)**
 
 This is the detailed configuration about products.
 
@@ -299,7 +319,7 @@ Please note that the elements should be compatible with [`download-product`](htt
 
 Let's take PKS as an example:
 
-```
+```yaml
 products:
   ...
   pks:
@@ -312,6 +332,47 @@ products:
 ```
 
 This is to fully embrace the idea of GitOps so we can drive changes by PR'ing and always consider the `platform-automation-configuration` repo is the source of the truth.
+
+### Stemcell Assignment
+
+By default, the latest version (e.g. `250.112`) of Stemcell within the applicable version range (e.g. `250.82–250.112`) will be assigned to the product, if we define our product in [`product.yml`](https://github.com/brightzheng100/platform-automation-configuration/blob/master/dev/products.yml) like this:
+
+```yaml
+products:
+  ...
+  pas:
+    product-version: "2.5.8"
+    pivnet-product-slug: elastic-runtime
+    pivnet-api-token: ((pivnet_token))
+    pivnet-file-glob: "srt-*.pivotal"
+    stemcell-iaas: google
+  ...
+```
+
+This is considered a good practice to apply the latest patched one, if possible.
+
+The interesting thing is, the applicable version range might change, should there be any compatible new Stemcell(s) released.
+
+So it's also a good idea to **fix** the Stemcell versions across platforms to have full version consistency.
+
+To achieve that, you can do something like this:
+
+```yaml
+products:
+  ...
+  pas:
+    product-version: "2.5.8"
+    pivnet-product-slug: elastic-runtime
+    pivnet-api-token: ((pivnet_token))
+    pivnet-file-glob: "srt-*.pivotal"
+    #stemcell-iaas: google                        # comment this out
+  pas-stemcell:                                   # follow the `<PRODUCT_ALIAS>-stemcell` naming pattern and specify Stemcell details
+    product-version: "250.99"                     # any available version from applicable Stemcell range of `250.82–250.112`, as of writing
+    pivnet-product-slug: stemcells-ubuntu-xenial
+    pivnet-api-token: ((pivnet_token))
+    pivnet-file-glob: "light-bosh-stemcell-*-google-kvm-ubuntu-xenial-go_agent.tgz"
+  ...
+```
 
 
 ## A Newly Built [Semver Config Concourse Resource](https://github.com/brightzheng100/semver-config-concourse-resource)

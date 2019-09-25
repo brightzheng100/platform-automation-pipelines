@@ -24,9 +24,13 @@ jobs:
   - download-upload-stage-product
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: #@ "product-config-{}".format(product_alias)
       trigger: true
+    - get: #@ "product-config-{}-stemcell".format(product_alias)
+      params:
+        filename: semver-config-stemcell
+        format: yaml
     - get: platform-automation-image
       params: {unpack: true}
     - get: platform-automation-tasks
@@ -58,12 +62,51 @@ jobs:
       env: interpolated-files
     params:
       ENV_FILE: ((foundation))/env/env.yml
+  - task: download-stemcell
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/download-product.yml
+    input_mapping:
+      config: #@ "product-config-{}-stemcell".format(product_alias)
+      vars: interpolated-files
+    params:
+      CONFIG_FILE: semver-config-stemcell.yaml
+      VARS_FILES: vars/((foundation))/config/global.yml
   - task: upload-stemcell
     image: platform-automation-image
     file: platform-automation-tasks/tasks/upload-stemcell.yml
     input_mapping:
       env: interpolated-files
-      stemcell: downloaded-stemcell
+      stemcell: downloaded-product
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+      FLOATING_STEMCELL: false
+  - task: prepare-assign-stemcell-config
+    image: platform-automation-image
+    config:
+      platform: linux
+      inputs:
+      - name: #@ "product-config-{}-stemcell".format(product_alias)
+      - name: interpolated-files
+      outputs:
+      - name: assign-stemcell-config
+      run:
+        path: sh
+        args:
+          - -exc
+          #@yaml/text-templated-strings
+          - |
+            stemcell_version="$( om interpolate \
+            --config product-config-(@= product_alias @)-stemcell/semver-config-stemcell.yaml \
+            --vars-file interpolated-files/((foundation))/config/global.yml \
+            --path /product-version )"
+            echo "{\"product\":\"(@= product_name @)\",\"stemcell\":\"$stemcell_version\"}" > assign-stemcell-config/config.yml
+            cat assign-stemcell-config/config.yml
+  - task: assign-stemcell
+    image: platform-automation-image
+    file: platform-automation-tasks/tasks/assign-stemcell.yml
+    input_mapping:
+      env: interpolated-files
+      config: assign-stemcell-config
     params:
       ENV_FILE: ((foundation))/env/env.yml
 
@@ -73,7 +116,7 @@ jobs:
   - generate-product-config
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: #@ "product-config-{}".format(product_alias)
       passed: 
       - #@ "download-upload-stage-product-{}".format(product_alias)
@@ -100,7 +143,7 @@ jobs:
   - configure-product
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: #@ "product-config-{}".format(product_alias)
       passed:
       - #@ "generate-product-config-{}".format(product_alias)
@@ -129,7 +172,7 @@ jobs:
 - name: apply-product-changes
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
       #@ for product in products():
       #@ product_alias=product.split("|")[0]
     - get: #@ "product-config-{}".format(product_alias)
@@ -154,7 +197,7 @@ jobs:
 - name: export-installation
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
       #@ for product in products():
       #@ product_alias=product.split("|")[0]
     - get: #@ "product-config-{}".format(product_alias)
