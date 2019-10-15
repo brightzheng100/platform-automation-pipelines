@@ -32,6 +32,6 @@
     name: installation
     type: gcs-resource
     source:
-      json_key: ((s3.gcp_json_key))
+      json_key: ((s3.gcs_json_key))
       bucket: ((s3.buckets.foundation))
       regexp: installation-(.*).zip
