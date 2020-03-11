@@ -1,6 +1,8 @@
 # WARNING - no longer actively maintained
 
-**:warning: due to the job change, this repo is no longer actively maintained. Please folk it and maintain your own copy if you find it useful.**
+**:warning: due to the job change, this repo is no longer actively maintained.**
+
+Please folk it and maintain your own copy if you find it useful.
 
 # `platform-automation`-powered Concourse Pipelines
 
