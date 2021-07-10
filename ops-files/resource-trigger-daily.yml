@@ -7,7 +7,7 @@
       interval: 24h
 
 - op: add
-  path: /jobs/name=((job_name))/plan/0/aggregate/-
+  path: /jobs/name=((job_name))/plan/0/in_parallel/-
   value:
     get: daily-trigger
     trigger: true

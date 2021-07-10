@@ -7,7 +7,7 @@
       interval: 999999h
 
 - op: add
-  path: /jobs/name=((job_name))/plan/0/aggregate/-
+  path: /jobs/name=((job_name))/plan/0/in_parallel/-
   value:
     get: one-time-trigger
     trigger: true
